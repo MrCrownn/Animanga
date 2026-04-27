@@ -1,4 +1,4 @@
-package cl.animanga.ms_auth.controller;
+    package cl.animanga.ms_auth.controller;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class UsuarioController {
         }
     
     else{
-        return ResponseEntity.status(500).body("NO SE PUDO GUARDAR");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respuesta);
     }
     }
    @GetMapping()
@@ -62,7 +62,7 @@ public class UsuarioController {
             return ResponseEntity.ok().body("Usuario Logeado");
         }
         if(resultado.equals("Password Incorrecto")){
-            return ResponseEntity.status(401).body("Combinacion usuario/password incorrecto");
+            return ResponseEntity.status(401).body("Combinacion usuario/password incorrecta");
         }
         else{
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resultado);

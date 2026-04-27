@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Usuario {
@@ -17,13 +19,15 @@ public class Usuario {
     private String email;
     private String password_hash;
     private String estado_cuenta;
-    private Integer idTipoUsuario;
+    @ManyToOne
+    @JoinColumn(name = "id_rol")
+    private Rol rol;
     public Usuario() {
         this.username="";
         this.email="";
         this.password_hash="";
         this.estado_cuenta="";
-        this.idTipoUsuario=0;
+        
     }
     
     public Long getId_usuario() {
@@ -57,12 +61,14 @@ public class Usuario {
         this.estado_cuenta = estado_cuenta;
     }
 
-    public Integer getIdTipoUsuario() {
-        return idTipoUsuario;
+    public Rol getRol() {
+        return rol;
     }
 
-    public void setIdTipoUsuario(Integer idTipoUsuario) {
-        this.idTipoUsuario = idTipoUsuario;
+    public void setRol(Rol rol) {
+        this.rol = rol;
     }
+
+   
     
 }
