@@ -1,0 +1,146 @@
+Aplicación dedicada a la creación de plataforma de catalogación y comunidad digital para entusiastas del anime y el manga.
+Objetivo del Caso
+El objetivo de este caso de estudio es desarrollar una aplicación capaz de centralizar su catálogo mediante un flujo de control de calidad (curación de contenido) y generar herramientas de análisis de datos.
+ 
+Perfiles del Sistema
+Administrador del Sistema (Dueño)
+Gestionar Usuarios: Crear, actualizar, desactivar y eliminar cuentas de usuarios y moderadores.
+Configurar Permisos: Definir roles de acceso para gestores de contenido y usuarios finales.
+Visualizar Dashboard Estadístico: Acceder a métricas en tiempo real sobre los animes/mangas más populares, crecimiento de usuarios y tendencias por género.
+Auditoría de Sistema: Revisar los registros de actividad para asegurar el correcto funcionamiento de la plataforma.
+Gestor de Contenido (Moderador)
+Confirmar/Rechazar Solicitudes: Revisar las propuestas de nuevos animes o mangas enviadas por los usuarios, validando su veracidad antes de publicarlas.
+Editar Catálogo Maestro: Corregir información, actualizar estados de emisión (en curso/finalizado) y gestionar metadatos (estudios, autores, etiquetas).
+Gestionar Imágenes: Cargar y optimizar las portadas oficiales para asegurar un rendimiento visual fluido en la web.
+Mantener Base de Datos: Eliminar registros duplicados y unificar criterios de búsqueda.
+Soporte Técnico
+Gestionar Incidencias: Recibir y resolver reportes técnicos sobre errores en la carga de listas o fallos en el perfil de usuario.
+Optimizar Recursos: Asegurar la disponibilidad de las imágenes y la velocidad de respuesta de las consultas a la base de datos.
+Actualizar Estado de Incidencias: Mantener informados a los usuarios sobre el progreso de sus reportes técnicos.
+ 
+
+
+Acciones de los Usuarios vía Web
+Crear Cuenta: Registrarse en la plataforma proporcionando información básica y preferencias iniciales.
+Iniciar Sesión: Acceder a su biblioteca personal mediante credenciales seguras.
+Importar Contenido: Importar nuevos animes o mangas que no existan en el catálogo (sujeto a aprobación del Gestor).
+Gestionar Biblioteca de Favoritos: Agregar títulos aprobados a su lista personal, marcándolos como "Favoritos", "Leídos" o "Viendo".
+Consultar Estadísticas Personales: Ver un resumen de cuánto tiempo han dedicado al anime o cuántos tomos de manga han completado.
+Navegar y Buscar: Explorar el catálogo verificado utilizando filtros por demografía (Shonen, Seinen, Shojo, etc.) o año de estreno.
+Dejar Reseñas y Calificaciones: Evaluar los títulos, lo cual alimenta el sistema de estadísticas globales del Administrador.
+Gestionar Perfil: Actualizar avatar, biografía y configuración de privacidad de sus listas.
+
+MS 1: Identity (IAM)
+tipo_usuario: Define los roles.
+Integer idTipoUsuario (PK)
+String nombreRol (Admin, Gestor, Soporte, Usuario)
+usuario: Credenciales críticas.
+Long idUsuario (PK)
+String username (Unique)
+String email (Unique)
+String passwordHash
+String estadoCuenta (Activo/Inactivo)
+Integer idTipoUsuario (FK)
+MS 2: Authorization
+permisos_usuarios: Acciones granulares.
+Integer idPermiso (PK)
+String accion (Ej: EDITAR_CATALOGO, VALIDAR_CURACION)
+rol_permisos: Tabla intermedia.
+Integer idTipoUsuario (FK)
+Integer idPermiso (FK)
+MS 3: Auditor
+auditoria_sistema: El "ojo" del administrador.
+Long idLog (PK)
+Long idUsuarioAccion (ID Remoto)
+String descripcionAccion
+String tablaAfectada
+LocalDateTime fechaHora
+MS 4: Profile
+perfil_detalles: Datos sociales.
+Long idPerfil (PK)
+Long idUsuario (ID Remoto)
+String avatarUrl
+String biografia
+LocalDateTime fechaRegistro
+sesiones_actividad: Para el Dashboard de crecimiento.
+Long idSesion (PK)
+Long idUsuario (ID Remoto)
+LocalDateTime fechaLogin
+
+
+MS 5: Catalog (Maestro)
+animanga: La obra oficial.
+Long idAnimanga (PK)
+String titulo
+String sinopsis
+LocalDate fechaEstreno
+String estadoEmision (En curso/Finalizado)
+Integer idTipo (FK)
+Integer idEntidadProduccion (ID Remoto de P3)
+tipo_animanga:
+Integer idTipo (PK)
+String nombre (Anime/Manga)
+MS 6: Taxonomy
+genero:
+Integer idGenero (PK)
+String nombre (Shonen, Seinen)
+generos_animanga: Tabla intermedia N:M.
+Long idAnimanga (FK)
+Integer idGenero (FK)
+MS 7: Curation (Flujo de Calidad)
+propuestas_importacion: Lo que envían los usuarios.
+Long idPropuesta (PK)
+Long idUsuarioPropone (ID Remoto)
+String datosJson (Contiene título, sinopsis, etc., propuestos)
+String estadoCuracion (Pendiente/Aprobado/Rechazado)
+historial_curacion: Registro de moderación.
+Long idCuracion (PK)
+Long idPropuesta (FK)
+Long idModerador (ID Remoto)
+LocalDateTime fechaDecision
+MS 8: Media
+galeria_portadas: Gestión de imágenes.
+Long idImagen (PK)
+Long idAnimanga (ID Remoto)
+String urlImagen
+String optimizacion (Ej: 'WebP 800x600')
+
+MS 9: Production (Entidades)
+nacionalidad:
+Integer idNacionalidad (PK)
+String pais
+entidades_produccion: (Autores, Estudios, Editoriales unificados por tipo).
+Integer idEntidad (PK)
+String nombre
+String tipoEntidad (Estudio/Autor/Editorial)
+Integer idNacionalidad (FK)
+MS 10: Social
+resenas:
+Long idResena (PK)
+Long idUsuario (ID Remoto)
+Long idAnimanga (ID Remoto)
+Double puntuacion
+String comentario
+votos_resena: Interactividad.
+Long idVoto (PK)
+Long idResena (FK)
+Long idUsuarioVota (ID Remoto)
+Boolean esUtil
+MS 11: Library (Biblioteca)
+usuario_catalogo: La lista personal.
+Long idBiblioteca (PK)
+Long idUsuario (ID Remoto)
+Long idAnimanga (ID Remoto)
+String estadoSeguimiento (Favorito, Leyendo, etc.)
+historial_capitulos:
+Long idProgreso (PK)
+Long idBiblioteca (FK)
+Integer capituloActual
+MS 12: HelpDesk
+incidencias: Soporte técnico.
+Long idIncidencia (PK)
+Long idUsuarioReporta (ID Remoto)
+String descripcion
+String estado (Abierto/Resuelto)
+LocalDateTime fechaReporte
+

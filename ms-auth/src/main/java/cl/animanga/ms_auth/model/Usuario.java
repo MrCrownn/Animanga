@@ -12,7 +12,7 @@ import jakarta.persistence.ManyToOne;
 public class Usuario {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private Long id_usuario;
+    private Long id;
     @Column(unique=true, nullable=false)
     private String username;
     @Column(unique=true, nullable=false)
@@ -30,11 +30,11 @@ public class Usuario {
         
     }
     
-    public Long getId_usuario() {
-        return id_usuario;
+    public Long getId() {
+        return id;
     }
-    public void setId_usuario(Long id_usuario) {
-        this.id_usuario = id_usuario;
+    public void setId(Long id) {
+        this.id = id;
     }
     public String getUsername() {
         return username;
