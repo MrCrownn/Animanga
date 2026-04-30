@@ -28,7 +28,7 @@ public class UsuarioController {
     public ResponseEntity <?>  registrar(@RequestBody Usuario usuario){
         String respuesta= this.usuarioService.registrarUsuario(usuario);
         if(respuesta.equals("Usuario registrado exitosamente")){
-            return ResponseEntity.ok().body(respuesta);
+            return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
         }
     
     else{
@@ -51,12 +51,13 @@ public class UsuarioController {
    @GetMapping("/{id}/status")
    public ResponseEntity <String> obtenerEstado(@PathVariable Long id){
     String estado= usuarioService.obtenerEstado(id);
-    if (estado.equals("INEXISTENTE")){
-        return ResponseEntity.status(404).body(estado);
+
+    if ("INEXISTENTE".equals(estado)) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(estado);
     }
     return ResponseEntity.ok(estado);
    }
-   @PutMapping("/{id}/actualizar")
+   @PutMapping("/{id}")
    public ResponseEntity <?> actualizaUsuario(@PathVariable Long id, @RequestBody Usuario usuario){
     String resultado= usuarioService.actualizaUsuario(id, usuario);
     if(resultado.equals("Usuario no encontrado")){
@@ -65,19 +66,14 @@ public class UsuarioController {
     if(resultado.equals("Usuario actualizado exitosamente")){
         return ResponseEntity.ok().body(resultado);
     }
-    else if(resultado.equals("Error: El nombre de usuario ocupado") || resultado.equals("Error: Correo electrónico ocupado")){
+    if(resultado.equals("Error: El nombre de usuario ocupado") || 
+        resultado.equals("Error: Correo electrónico ocupado")){
         return ResponseEntity.status(HttpStatus.CONFLICT).body(resultado);
     }
-    else if(resultado.equals("Error: Rol no existe")){
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resultado);
-    }
-    else if (resultado.equals("Error:Correo electrónico ocupado") || resultado.equals("Error: El nombre de usuario ocupado")){
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(resultado);
-    }
-    else{
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resultado);
-    }
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resultado);
+    
    }
+   @PutMapping("/{id}/password")
    public ResponseEntity <?> actualizaPassword(@PathVariable Long id, @RequestBody String nuevaPassword){
     String resultado= usuarioService.actualizaPassword(id, nuevaPassword);
     if(resultado.equals("Usuario no encontrado")){
@@ -104,16 +100,13 @@ public class UsuarioController {
         if (usuario == null){
             return ResponseEntity.status(404).body("Usuario no encontrado con id: " + id);
         }
-        return ResponseEntity.ok(" Activado");
+        return ResponseEntity.ok("Activado");
     }
     @PutMapping("/{id}/rol")
     public ResponseEntity <?> asignarRol(@PathVariable Long id, @RequestBody Rol nuevoRol){
         Integer idRol= nuevoRol.getId();
         String resultado= usuarioService.cambiarRol(id, idRol);
-        if(resultado.equals("Usuario no encontrado")){
-            return ResponseEntity.status(404).body(resultado);
-        }
-        if(resultado.equals("Rol no encontrado")){
+        if(resultado.equals("Usuario no encontrado") || resultado.equals("Rol no encontrado")){
             return ResponseEntity.status(404).body(resultado);
         }
         return ResponseEntity.ok("Rol asignado correctamente");
@@ -122,42 +115,42 @@ public class UsuarioController {
     public ResponseEntity <?> existeUsuario(
             @RequestParam(required=false) String username,
              @RequestParam(required=false) String email){
-        if (username == null && email == null){
+        
+        if ((username == null || username.isBlank()) && (email == null || email.isBlank())){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Debe proporcionar username o email");
+                    .body("Debe proporcionar al menos un parámetro: username o email");
         }
-        boolean existe= false;
-        if (username != null){
-            existe= usuarioService.existeUsuario(username);
+
+        boolean existe = false;
+        if (username != null && !username.isBlank()) {
+            existe = usuarioService.existeUsuario(username);
         }
-        else if ( email != null){
-            existe= usuarioService.existeEmail(email);
+        if (!existe && email != null && !email.isBlank()) {
+            existe = usuarioService.existeEmail(email);
         }
+
         return ResponseEntity.ok(existe);
     }
    @DeleteMapping("/{id}")
    public ResponseEntity <?> eliminarUsuario(@PathVariable Long id){
-    boolean eliminado= usuarioService.eliminarUsuario(id);
-    if (eliminado){
+    if (usuarioService.eliminarUsuario(id)) {
         return ResponseEntity.ok("Usuario eliminado");
     }
-    else{
-        return ResponseEntity.status(404).body("Usuario no encontrado con id: " + id);
-    }
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado con id: " + id);
    }
    @PostMapping("/login")
    public ResponseEntity <String> login (@RequestBody Usuario loginData){
-        if (loginData == null || loginData.getUsername() == null &&
-                loginData.getEmail() == null) 
+        if (loginData == null || 
+            (loginData.getUsername() == null && loginData.getEmail() == null)) 
         {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Debe proporcionar username o email");
     }
     
-        String autenticador=loginData.getUsername();
-        if(autenticador == null || autenticador.isEmpty()){
-            autenticador=loginData.getEmail();
-        }
+        String autenticador = (loginData.getUsername() != null && !loginData.getUsername().isBlank()) 
+            ? loginData.getUsername() 
+            : loginData.getEmail();
+
         String resultado= usuarioService.login(autenticador, loginData.getPassword_hash());
         if(resultado.equals("No encontrado")){
             return ResponseEntity.status(404).body("Usuario/email no existe");      
@@ -168,9 +161,9 @@ public class UsuarioController {
         if(resultado.equals("Password Incorrecto")){
             return ResponseEntity.status(401).body("Combinacion usuario/password incorrecta");
         }
-        else{
+        
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resultado);
-        }
+        
     }
 
 }

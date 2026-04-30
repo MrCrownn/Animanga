@@ -34,15 +34,7 @@ public class UsuarioService {
             return "Password Incorrecto";
         }
     }
-    public String cambiarPassword(Long id, String nuevaPassword){
-        Usuario user= usuarioRepository.findById(id).orElse(null);
-        if (user == null){
-            return "Usuario no encontrado";
-        }
-        user.setPassword_hash(nuevaPassword);
-        usuarioRepository.save(user);
-        return "EXITO";
-    }
+
     public String obtenerEstado(Long id){
         Usuario user= usuarioRepository.findById(id).orElse(null);
         if (user == null){
@@ -151,4 +143,5 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
         return "Contraseña actualizada exitosamente";
     }
+  
 }
