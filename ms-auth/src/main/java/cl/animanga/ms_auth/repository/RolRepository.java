@@ -10,4 +10,5 @@ import cl.animanga.ms_auth.model.Rol;
 @Repository
 public interface RolRepository extends JpaRepository<Rol, Integer> {
     Optional <Rol> findByNombre(String nombre);
+    boolean existsByNombre(String nombre);
 }

@@ -24,11 +24,32 @@ public class RolController {
     @Autowired
     private RolService rolService;
     
-    // Crear nuevo rol
-    @PostMapping
-    public ResponseEntity<Rol> crear(@RequestBody Rol rol) {
-        Rol guardado = rolService.guardar(rol);
-        return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
+    
+    @PostMapping("/{idRol}/permisos/{idPermiso}")
+    public ResponseEntity<String> asignarPermiso(@PathVariable Integer idRol, @PathVariable Integer idPermiso) {
+        String respuesta = rolService.asignarPermiso(idRol, idPermiso);
+        if (respuesta.equals("Permiso Asignado")) {
+            return ResponseEntity.ok(respuesta);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(respuesta);
+        }
+    }
+
+   @PostMapping
+    public ResponseEntity<?> crear(@RequestBody Rol rol) {
+    // Validación de entrada
+    if (rol == null || rol.getNombre() == null || rol.getNombre().trim().isEmpty()) {
+        return ResponseEntity.badRequest().body("El nombre del rol es obligatorio");
+    }
+    
+    // Aquí recibes el String del servicio
+    String respuesta = rolService.guardar(rol);
+    
+    if (respuesta.equals("Rol guardado exitosamente")) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
+    } else {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(respuesta);
+    }
     }
     
     // Listar todos los roles
@@ -48,17 +69,32 @@ public class RolController {
     }
     // Buscar rol por nombre
     @GetMapping("/nombre/{nombre}")
-    public ResponseEntity<Rol> obtenerPorNombre(@PathVariable String nombre) {
-        Optional<Rol> rol = rolService.obtenerPorNombre(nombre);
-        return rol.map(ResponseEntity::ok)
-                  .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> obtenerPorNombre(@PathVariable String nombre) {
+        Rol rol = rolService.obtenerPorNombre(nombre).orElse(null);
+        if(rol == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Rol no encontrado");
+        }
+        return ResponseEntity.ok(rol);
     }
     
     // Eliminar rol
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
+    public ResponseEntity<?> eliminar(@PathVariable Integer id) {
         boolean eliminado = rolService.eliminar(id);
-        return eliminado ? ResponseEntity.noContent().build()
-                         : ResponseEntity.notFound().build();
+        if (eliminado) {
+            return ResponseEntity.ok("Rol eliminado exitosamente");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Rol no encontrado");
+        }
     }
+    @DeleteMapping("/{idRol}/permisos/{idPermiso}")
+    public ResponseEntity<String> removerPermiso(@PathVariable Integer idRol, @PathVariable Integer idPermiso) {
+        String respuesta = rolService.removerPermiso(idRol, idPermiso);
+        if (respuesta.equals("Permiso Removido")) 
+            return ResponseEntity.ok(respuesta);
+        else 
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(respuesta);
+        
+    }
+
 }
