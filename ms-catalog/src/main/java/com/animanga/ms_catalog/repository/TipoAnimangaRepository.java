@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.animanga.ms_catalog.model.TipoAnimanga;
 
 @Repository
-public interface TipoAnimangaRepository extends JpaRepository<TipoAnimanga, Long> {
-
+public interface TipoAnimangaRepository extends JpaRepository<TipoAnimanga, Integer> {
+    boolean existsByNombre(String nombre);
 }

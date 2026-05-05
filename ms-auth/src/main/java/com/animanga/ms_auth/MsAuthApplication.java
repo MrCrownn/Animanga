@@ -1,4 +1,4 @@
-package com.animanga.ms_catalog;
+package com.animanga.ms_auth;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,10 +6,10 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-public class MsCatalogApplication {
+public class MsAuthApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MsCatalogApplication.class, args);
+		SpringApplication.run(MsAuthApplication.class, args);
 	}
 
 }
