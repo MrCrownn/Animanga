@@ -1,10 +1,10 @@
-package cl.animanga.ms_auth;
+package com.animanga.api_gateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MsAuthApplicationTests {
+class ApiGatewayApplicationTests {
 
 	@Test
 	void contextLoads() {

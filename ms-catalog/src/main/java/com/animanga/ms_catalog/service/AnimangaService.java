@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.animanga.ms_catalog.model.Animanga;
 import com.animanga.ms_catalog.repository.AnimangaRepository;
@@ -14,6 +16,23 @@ public class AnimangaService {
     
     @Autowired
     private AnimangaRepository animangaRepository;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private String validarEntidadProduccion(Long id, String tipo) {
+        if (id == null) return null;
+        try {
+            String url = "http://ms-production/api/entidades/" + id;
+            ResponseEntity<?> response = restTemplate.getForEntity(url, Object.class);
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                return "El " + tipo + " con id " + id + " no existe";
+            }
+        } catch (Exception e) {
+            return "Error al validar " + tipo + ": " + e.getMessage();
+        }
+        return null;
+    }
 
     public String guardar(Animanga animanga) {
         if (animanga.getTitulo() == null || animanga.getTitulo().trim().isEmpty()) {
@@ -29,6 +48,12 @@ public class AnimangaService {
         if (animangaRepository.existsByTitulo(animanga.getTitulo())) {
             return "El Animanga '" + animanga.getTitulo() + "' ya existe";
         }
+
+        String errorEstudio = validarEntidadProduccion(animanga.getIdEstudio(), "estudio");
+        if (errorEstudio != null) return errorEstudio;
+
+        String errorAutor = validarEntidadProduccion(animanga.getIdAutor(), "autor");
+        if (errorAutor != null) return errorAutor;
         
         animangaRepository.save(animanga);
         return "Animanga guardado exitosamente";
@@ -77,9 +102,13 @@ public class AnimangaService {
             animangaExistente.setTipoAnimanga(animangaActualizado.getTipoAnimanga());
         }
         if (animangaActualizado.getIdEstudio() != null) {
+            String errorEstudio = validarEntidadProduccion(animangaActualizado.getIdEstudio(), "estudio");
+            if (errorEstudio != null) return errorEstudio;
             animangaExistente.setIdEstudio(animangaActualizado.getIdEstudio());
         }
         if (animangaActualizado.getIdAutor() != null) {
+            String errorAutor = validarEntidadProduccion(animangaActualizado.getIdAutor(), "autor");
+            if (errorAutor != null) return errorAutor;
             animangaExistente.setIdAutor(animangaActualizado.getIdAutor());
         }
         
