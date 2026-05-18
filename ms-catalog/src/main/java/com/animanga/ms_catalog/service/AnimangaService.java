@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.animanga.ms_catalog.dto.AnimangaResumen;
+import com.animanga.ms_catalog.dto.AuditRequest;
 import com.animanga.ms_catalog.model.Animanga;
 import com.animanga.ms_catalog.repository.AnimangaRepository;
 
@@ -34,6 +36,16 @@ public class AnimangaService {
         return null;
     }
 
+    private void auditar(String accion, String tabla) {
+        try {
+            String url = "http://ms-auditoria/api/auditoria";
+            AuditRequest request = new AuditRequest(null, accion, tabla);
+            restTemplate.postForEntity(url, request, String.class);
+        } catch (Exception e) {
+            System.err.println("Error al auditar: " + e.getMessage());
+        }
+    }
+
     public String guardar(Animanga animanga) {
         if (animanga.getTitulo() == null || animanga.getTitulo().trim().isEmpty()) {
             return "El título del Animanga es obligatorio";
@@ -56,6 +68,7 @@ public class AnimangaService {
         if (errorAutor != null) return errorAutor;
         
         animangaRepository.save(animanga);
+        auditar("Animanga '" + animanga.getTitulo() + "' creado", "animanga");
         return "Animanga guardado exitosamente";
     }
 
@@ -113,12 +126,19 @@ public class AnimangaService {
         }
         
         animangaRepository.save(animangaExistente);
+        auditar("Animanga '" + animangaExistente.getTitulo() + "' actualizado", "animanga");
         return "Animanga actualizado exitosamente";
+    }
+
+    public List<AnimangaResumen> listarResumen() {
+        return animangaRepository.listarResumen();
     }
 
     public boolean eliminar(Long id) {
         if (animangaRepository.existsById(id)) {
+            Optional<Animanga> animanga = animangaRepository.findById(id);
             animangaRepository.deleteById(id);
+            animanga.ifPresent(a -> auditar("Animanga '" + a.getTitulo() + "' eliminado", "animanga"));
             return true;
         }
         return false;

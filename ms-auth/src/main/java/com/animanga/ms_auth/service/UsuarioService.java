@@ -5,7 +5,10 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import com.animanga.ms_auth.dto.AuditRequest;
+import com.animanga.ms_auth.dto.UsuarioResponse;
 import com.animanga.ms_auth.model.Rol;
 import com.animanga.ms_auth.model.Usuario;
 import com.animanga.ms_auth.repository.RolRepository;
@@ -18,18 +21,34 @@ public class UsuarioService {
 
     @Autowired
     private RolRepository rolRepository;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private void auditar(Long idUsuario, String accion, String tabla) {
+        try {
+            String url = "http://ms-auditoria/api/auditoria";
+            AuditRequest request = new AuditRequest(idUsuario, accion, tabla);
+            restTemplate.postForEntity(url, request, String.class);
+        } catch (Exception e) {
+            System.err.println("Error al auditar: " + e.getMessage());
+        }
+    }
     public String login(String identificador, String password){
         Usuario user= usuarioRepository.findByUsername(identificador);
         if (user==null){
             user=usuarioRepository.findByEmail(identificador);
         }
         if (user == null){
+            auditar(null, "Intento de login fallido - usuario no encontrado: " + identificador, "usuario");
             return "No encontrado";
         }
         if(user.getPassword_hash().equals(password)){
+            auditar(user.getId(), "Inicio de sesión exitoso", "usuario");
             return "Logeado";
         }
         else{
+            auditar(user.getId(), "Intento de login fallido - contraseña incorrecta", "usuario");
             return "Password Incorrecto";
         }
     }
@@ -52,6 +71,7 @@ public class UsuarioService {
         }
         usuario.setRol(rol);
         usuarioRepository.save(usuario);
+        auditar(idUsuario, "Rol cambiado a: " + rol.getNombre(), "usuario");
         return "ok";
     }
     public boolean existeUsuario(String username){
@@ -63,6 +83,7 @@ public class UsuarioService {
     public boolean eliminarUsuario(Long id){
         if (usuarioRepository.existsById(id)){
             usuarioRepository.deleteById(id);
+            auditar(id, "Usuario eliminado", "usuario");
             return true;
         }
         return false;
@@ -71,7 +92,9 @@ public class UsuarioService {
         Usuario user= usuarioRepository.findById(id).orElse(null);
         if (user != null){
             user.setEstado_cuenta(nuevoEstado);
-            return usuarioRepository.save(user);
+            Usuario actualizado = usuarioRepository.save(user);
+            auditar(id, "Cuenta " + (nuevoEstado.equals("ACTIVO") ? "activada" : "desactivada"), "usuario");
+            return actualizado;
         }
         return null;
     }
@@ -93,6 +116,7 @@ public class UsuarioService {
             return "Error: Correo electrónico ocupado";
         }
         usuarioRepository.save(usuario);
+        auditar(usuario.getId(), "Usuario registrado: " + usuario.getUsername(), "usuario");
         return "Usuario registrado exitosamente";
         }
         public Usuario obtenerUsuario(Long id){
@@ -133,6 +157,10 @@ public class UsuarioService {
         usuarioRepository.save(usuarioExistente);
         return "Usuario actualizado exitosamente";
     }
+    public Optional<UsuarioResponse> obtenerUsuarioInfo(Long id) {
+        return usuarioRepository.encontrarUsuarioDTO(id);
+    }
+
     public String actualizaPassword(Long id, String nuevaPassword){
         Usuario usuario= usuarioRepository.findById(id).orElse(null);
         if (usuario == null){

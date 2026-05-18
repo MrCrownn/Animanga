@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.animanga.ms_catalog.dto.AnimangaResumen;
 import com.animanga.ms_catalog.model.Animanga;
 import com.animanga.ms_catalog.service.AnimangaService;
 
@@ -61,6 +62,11 @@ public class AnimangaController {
         return ResponseEntity.ok(animanga.get());
     }
     
+    @GetMapping("/resumen")
+    public List<AnimangaResumen> listarResumen() {
+        return animangaService.listarResumen();
+    }
+
     @GetMapping("/buscar")
     public ResponseEntity<List<Animanga>> buscarPorTitulo(@RequestParam String titulo) {
         return ResponseEntity.ok(animangaService.buscarPorTitulo(titulo));

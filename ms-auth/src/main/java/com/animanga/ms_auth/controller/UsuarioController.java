@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.animanga.ms_auth.dto.UsuarioResponse;
 import com.animanga.ms_auth.model.Rol;
 import com.animanga.ms_auth.model.Usuario;
 import com.animanga.ms_auth.service.UsuarioService;
@@ -48,8 +49,17 @@ public class UsuarioController {
         }
         return ResponseEntity.ok(usuario);
    }
-   @GetMapping("/{id}/status")
-   public ResponseEntity <String> obtenerEstado(@PathVariable Long id){
+    @GetMapping("/{id}/info")
+    public ResponseEntity<?> obtenerUsuarioInfo(@PathVariable Long id) {
+        java.util.Optional<UsuarioResponse> usuario = usuarioService.obtenerUsuarioInfo(id);
+        if (usuario.isEmpty()) {
+            return ResponseEntity.status(404).body("Usuario no encontrado con id: " + id);
+        }
+        return ResponseEntity.ok(usuario.get());
+    }
+
+    @GetMapping("/{id}/status")
+    public ResponseEntity <String> obtenerEstado(@PathVariable Long id){
     String estado= usuarioService.obtenerEstado(id);
 
     if ("INEXISTENTE".equals(estado)) {

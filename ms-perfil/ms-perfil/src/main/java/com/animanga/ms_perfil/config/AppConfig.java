@@ -1,4 +1,4 @@
-package com.animanga.ms_auth.config;
+package com.animanga.ms_perfil.config;
 
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
