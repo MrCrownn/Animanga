@@ -72,12 +72,12 @@ public class TipoEntidadService {
     }
 
     public boolean eliminar(Integer id) {
-        if (tipoEntidadRepository.existsById(id)) {
-            String nombre = tipoEntidadRepository.findById(id).get().getNombre();
-            tipoEntidadRepository.deleteById(id);
-            auditar("TipoEntidad '" + nombre + "' eliminado", "tipo_entidad");
-            return true;
+        TipoEntidad tipoEntidad = tipoEntidadRepository.findById(id).orElse(null);
+        if (tipoEntidad == null) {
+            return false;
         }
-        return false;
+        tipoEntidadRepository.delete(tipoEntidad);
+        auditar("TipoEntidad '" + tipoEntidad.getNombre() + "' eliminado", "tipo_entidad");
+        return true;
     }
 }

@@ -58,7 +58,7 @@ public class UsuarioService {
         if (user == null){
             return "INEXISTENTE";
         }
-        return user.getEstado_cuenta();
+        return user.getEstadoCuenta().name();
     }
     public String cambiarRol(Long idUsuario, Integer idRol){
         Usuario usuario= usuarioRepository.findById(idUsuario).orElse(null);
@@ -88,12 +88,12 @@ public class UsuarioService {
         }
         return false;
     }
-    public Usuario cambiarEstado(long id, String nuevoEstado){
+    public Usuario cambiarEstado(long id, Usuario.EstadoCuenta nuevoEstado){
         Usuario user= usuarioRepository.findById(id).orElse(null);
         if (user != null){
-            user.setEstado_cuenta(nuevoEstado);
+            user.setEstadoCuenta(nuevoEstado);
             Usuario actualizado = usuarioRepository.save(user);
-            auditar(id, "Cuenta " + (nuevoEstado.equals("ACTIVO") ? "activada" : "desactivada"), "usuario");
+            auditar(id, "Cuenta " + (nuevoEstado == Usuario.EstadoCuenta.ACTIVO ? "activada" : "desactivada"), "usuario");
             return actualizado;
         }
         return null;
@@ -109,6 +109,9 @@ public class UsuarioService {
         }
         Rol rol = rolOpt.get();
         usuario.setRol(rol);
+        if (usuario.getEstadoCuenta() == null) {
+            usuario.setEstadoCuenta(Usuario.EstadoCuenta.ACTIVO);
+        }
         if (existeUsuario(usuario.getUsername())) {
             return "Error: El nombre de usuario ocupado";
         }

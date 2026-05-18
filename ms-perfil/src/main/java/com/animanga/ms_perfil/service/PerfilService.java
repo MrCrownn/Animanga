@@ -95,12 +95,12 @@ public class PerfilService {
     }
 
     public boolean eliminar(Long id) {
-        if (perfilRepository.existsById(id)) {
-            Optional<Perfil> perfil = perfilRepository.findById(id);
-            perfilRepository.deleteById(id);
-            perfil.ifPresent(p -> auditar(p.getIdUsuario(), "Perfil eliminado", "perfil"));
-            return true;
+        Perfil perfil = perfilRepository.findById(id).orElse(null);
+        if (perfil == null) {
+            return false;
         }
-        return false;
+        perfilRepository.delete(perfil);
+        auditar(perfil.getIdUsuario(), "Perfil eliminado", "perfil");
+        return true;
     }
 }

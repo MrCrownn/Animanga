@@ -15,4 +15,3 @@ public class PasswordRequest {
         this.password = password;
     }
 }
-x

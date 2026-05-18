@@ -97,9 +97,9 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resultado);
     }
    }
-   @PutMapping("/{id}/desactivar")
+    @PutMapping("/{id}/desactivar")
     public ResponseEntity <?> desactivarUsuario(@PathVariable Long id){
-     Usuario usuario= usuarioService.cambiarEstado(id, "INACTIVO");
+     Usuario usuario= usuarioService.cambiarEstado(id, Usuario.EstadoCuenta.INACTIVO);
      if (usuario == null){
           return ResponseEntity.status(404).body("Usuario no encontrado con id: " + id);
      }
@@ -107,7 +107,7 @@ public class UsuarioController {
     }
     @PutMapping("/{id}/activar")
     public ResponseEntity <?> activarUsuario(@PathVariable Long id){
-        Usuario usuario= usuarioService.cambiarEstado(id, "ACTIVO");
+        Usuario usuario= usuarioService.cambiarEstado(id, Usuario.EstadoCuenta.ACTIVO);
         if (usuario == null){
             return ResponseEntity.status(404).body("Usuario no encontrado con id: " + id);
         }

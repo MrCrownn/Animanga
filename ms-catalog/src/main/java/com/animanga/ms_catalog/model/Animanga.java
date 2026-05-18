@@ -1,6 +1,8 @@
 package com.animanga.ms_catalog.model;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,12 +10,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "animanga")
 public class Animanga {
+
+    public enum EstadoEmision {
+        EN_CURSO, FINALIZADO
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,7 +35,7 @@ public class Animanga {
     private LocalDate fechaEstreno;
 
     @Column(name= "estado_emision")
-    private String estadoEmision;
+    private EstadoEmision estadoEmision;
 
     @ManyToOne
     @JoinColumn(name = "idTipo")
@@ -38,6 +46,14 @@ public class Animanga {
 
     @Column(name = "id_autor") //Fk remota a EntidadProduccion
     private Long idAutor;
+
+    @ManyToMany
+    @JoinTable(
+        name = "animanga_genero",
+        joinColumns = @JoinColumn(name = "id_animanga"),
+        inverseJoinColumns = @JoinColumn(name = "id_genero")
+    )
+    private Set<Genero> generos = new HashSet<>();
 
     public Animanga() {
         this.titulo = "";
@@ -77,11 +93,11 @@ public class Animanga {
         this.fechaEstreno = fechaEstreno;
     }
 
-    public String getEstadoEmision() {
+    public EstadoEmision getEstadoEmision() {
         return estadoEmision;
     }
 
-    public void setEstadoEmision(String estadoEmision) {
+    public void setEstadoEmision(EstadoEmision estadoEmision) {
         this.estadoEmision = estadoEmision;
     }
 
@@ -108,6 +124,13 @@ public class Animanga {
     public void setIdAutor(Long idAutor) {
         this.idAutor = idAutor;
     }
-    
+
+    public Set<Genero> getGeneros() {
+        return generos;
+    }
+
+    public void setGeneros(Set<Genero> generos) {
+        this.generos = generos;
+    }
 
 }

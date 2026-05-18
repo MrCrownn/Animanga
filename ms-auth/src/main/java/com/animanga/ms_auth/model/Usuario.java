@@ -10,6 +10,10 @@ import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Usuario {
+
+    public enum EstadoCuenta {
+        ACTIVO, INACTIVO
+    }
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
@@ -18,7 +22,7 @@ public class Usuario {
     @Column(unique=true, nullable=false)
     private String email;
     private String password_hash;
-    private String estado_cuenta;
+    private EstadoCuenta estadoCuenta;
     @ManyToOne
     @JoinColumn(name = "id_rol")
     private Rol rol;
@@ -26,7 +30,6 @@ public class Usuario {
         this.username="";
         this.email="";
         this.password_hash="";
-        this.estado_cuenta="";
         
     }
     
@@ -54,11 +57,12 @@ public class Usuario {
     public void setPassword_hash(String password_hash) {
         this.password_hash = password_hash;
     }
-    public String getEstado_cuenta() {
-        return estado_cuenta;
+    public EstadoCuenta getEstadoCuenta() {
+        return estadoCuenta;
     }
-    public void setEstado_cuenta(String estado_cuenta) {
-        this.estado_cuenta = estado_cuenta;
+
+    public void setEstadoCuenta(EstadoCuenta estadoCuenta) {
+        this.estadoCuenta = estadoCuenta;
     }
 
     public Rol getRol() {

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -135,12 +135,12 @@ public class AnimangaService {
     }
 
     public boolean eliminar(Long id) {
-        if (animangaRepository.existsById(id)) {
-            Optional<Animanga> animanga = animangaRepository.findById(id);
-            animangaRepository.deleteById(id);
-            animanga.ifPresent(a -> auditar("Animanga '" + a.getTitulo() + "' eliminado", "animanga"));
-            return true;
+        Animanga animanga = animangaRepository.findById(id).orElse(null);
+        if (animanga == null) {
+            return false;
         }
-        return false;
+        animangaRepository.delete(animanga);
+        auditar("Animanga '" + animanga.getTitulo() + "' eliminado", "animanga");
+        return true;
     }
 }

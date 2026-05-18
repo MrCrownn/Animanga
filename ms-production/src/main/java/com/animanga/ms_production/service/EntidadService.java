@@ -101,12 +101,12 @@ public class EntidadService {
     }
 
     public boolean eliminar(Integer id) {
-        if (entidadRepository.existsById(id)) {
-            String nombre = entidadRepository.findById(id).get().getNombre();
-            entidadRepository.deleteById(id);
-            auditar("Entidad '" + nombre + "' eliminada", "entidad");
-            return true;
+        Entidad entidad = entidadRepository.findById(id).orElse(null);
+        if (entidad == null) {
+            return false;
         }
-        return false;
+        entidadRepository.delete(entidad);
+        auditar("Entidad '" + entidad.getNombre() + "' eliminada", "entidad");
+        return true;
     }
 }

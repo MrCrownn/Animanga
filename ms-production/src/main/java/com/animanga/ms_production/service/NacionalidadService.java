@@ -74,12 +74,12 @@ public class NacionalidadService {
     }
 
     public boolean eliminar(Integer id) {
-        if (nacionalidadRepository.existsById(id)) {
-            String pais = nacionalidadRepository.findById(id).get().getPais();
-            nacionalidadRepository.deleteById(id);
-            auditar("Nacionalidad '" + pais + "' eliminada", "nacionalidad");
-            return true;
+        Nacionalidad nacionalidad = nacionalidadRepository.findById(id).orElse(null);
+        if (nacionalidad == null) {
+            return false;
         }
-        return false;
+        nacionalidadRepository.delete(nacionalidad);
+        auditar("Nacionalidad '" + nacionalidad.getPais() + "' eliminada", "nacionalidad");
+        return true;
     }
 }
