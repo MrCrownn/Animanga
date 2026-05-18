@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import com.animanga.ms_production.dto.AuditRequest;
 import com.animanga.ms_production.model.TipoEntidad;
 import com.animanga.ms_production.repository.TipoEntidadRepository;
 
@@ -14,6 +16,19 @@ public class TipoEntidadService {
 
     @Autowired
     private TipoEntidadRepository tipoEntidadRepository;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private void auditar(String accion, String tabla) {
+        try {
+            String url = "http://ms-auditoria/api/auditoria";
+            AuditRequest request = new AuditRequest(null, accion, tabla);
+            restTemplate.postForEntity(url, request, String.class);
+        } catch (Exception e) {
+            System.err.println("Error al auditar: " + e.getMessage());
+        }
+    }
 
     public String guardar(TipoEntidad tipoEntidad) {
         if (tipoEntidad.getNombre() == null || tipoEntidad.getNombre().trim().isEmpty()) {
@@ -25,6 +40,7 @@ public class TipoEntidadService {
         }
 
         tipoEntidadRepository.save(tipoEntidad);
+        auditar("TipoEntidad '" + tipoEntidad.getNombre() + "' creado", "tipo_entidad");
         return "Tipo de entidad guardado exitosamente";
     }
 
@@ -51,12 +67,15 @@ public class TipoEntidadService {
         }
 
         tipoEntidadRepository.save(tipoExistente);
+        auditar("TipoEntidad '" + tipoExistente.getNombre() + "' actualizado", "tipo_entidad");
         return "Tipo de entidad actualizado exitosamente";
     }
 
     public boolean eliminar(Integer id) {
         if (tipoEntidadRepository.existsById(id)) {
+            String nombre = tipoEntidadRepository.findById(id).get().getNombre();
             tipoEntidadRepository.deleteById(id);
+            auditar("TipoEntidad '" + nombre + "' eliminado", "tipo_entidad");
             return true;
         }
         return false;

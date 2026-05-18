@@ -25,9 +25,9 @@ public class AnimangaService {
     private String validarEntidadProduccion(Long id, String tipo) {
         if (id == null) return null;
         try {
-            String url = "http://ms-production/api/entidades/" + id;
-            ResponseEntity<?> response = restTemplate.getForEntity(url, Object.class);
-            if (!response.getStatusCode().is2xxSuccessful()) {
+            String url = "http://ms-production/api/entidades/" + id + "/existe";
+            Boolean existe = restTemplate.getForObject(url, Boolean.class);
+            if (!existe) {
                 return "El " + tipo + " con id " + id + " no existe";
             }
         } catch (Exception e) {

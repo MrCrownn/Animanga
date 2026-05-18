@@ -58,6 +58,11 @@ public class EntidadController {
         return ResponseEntity.ok(entidad.get());
     }
 
+    @GetMapping("/{id}/existe")
+    public ResponseEntity<Boolean> existe(@PathVariable Integer id) {
+        return ResponseEntity.ok(entidadService.existePorId(id));
+    }
+
     @GetMapping("/tipo")
     public ResponseEntity<List<Entidad>> buscarPorTipo(@RequestParam String nombre) {
         return ResponseEntity.ok(entidadService.buscarPorTipo(nombre));

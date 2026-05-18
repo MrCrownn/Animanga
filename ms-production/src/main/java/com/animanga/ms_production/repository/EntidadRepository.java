@@ -11,5 +11,5 @@ import com.animanga.ms_production.model.Entidad;
 public interface EntidadRepository extends JpaRepository<Entidad, Integer> {
     List<Entidad> findByTipoEntidad_Nombre(String nombre);
     boolean existsByNombreAndTipoEntidad_IdTipo(String nombre, Integer idTipo);
-    List <Entidad> findByTipoEntidad_Pais(String pais);
+    List<Entidad> findByNacionalidad_Pais(String pais);
 }

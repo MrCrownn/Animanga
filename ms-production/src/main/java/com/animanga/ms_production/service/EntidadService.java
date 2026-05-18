@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import com.animanga.ms_production.dto.AuditRequest;
 import com.animanga.ms_production.model.Entidad;
 import com.animanga.ms_production.repository.EntidadRepository;
 
@@ -14,6 +16,19 @@ public class EntidadService {
 
     @Autowired
     private EntidadRepository entidadRepository;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private void auditar(String accion, String tabla) {
+        try {
+            String url = "http://ms-auditoria/api/auditoria";
+            AuditRequest request = new AuditRequest(null, accion, tabla);
+            restTemplate.postForEntity(url, request, String.class);
+        } catch (Exception e) {
+            System.err.println("Error al auditar: " + e.getMessage());
+        }
+    }
 
     public String guardar(Entidad entidad) {
         if (entidad.getNombre() == null || entidad.getNombre().trim().isEmpty()) {
@@ -29,6 +44,7 @@ public class EntidadService {
         }
 
         entidadRepository.save(entidad);
+        auditar("Entidad '" + entidad.getNombre() + "' creada", "entidad");
         return "Entidad guardada exitosamente";
     }
 
@@ -72,16 +88,23 @@ public class EntidadService {
         }
 
         entidadRepository.save(entidadExistente);
+        auditar("Entidad '" + entidadExistente.getNombre() + "' actualizada", "entidad");
         return "Entidad actualizada exitosamente";
     }
 
+    public boolean existePorId(Integer id) {
+        return entidadRepository.existsById(id);
+    }
+
     public List <Entidad> buscarPorPais(String pais) {
-        return entidadRepository.findByTipoEntidad_Pais(pais);
+        return entidadRepository.findByNacionalidad_Pais(pais);
     }
 
     public boolean eliminar(Integer id) {
         if (entidadRepository.existsById(id)) {
+            String nombre = entidadRepository.findById(id).get().getNombre();
             entidadRepository.deleteById(id);
+            auditar("Entidad '" + nombre + "' eliminada", "entidad");
             return true;
         }
         return false;

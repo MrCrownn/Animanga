@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import com.animanga.ms_catalog.dto.AuditRequest;
 import com.animanga.ms_catalog.model.TipoAnimanga;
 import com.animanga.ms_catalog.repository.TipoAnimangaRepository;
 
@@ -14,6 +16,19 @@ public class TipoAnimangaService {
     
     @Autowired
     private TipoAnimangaRepository tipoAnimangaRepository;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private void auditar(String accion, String tabla) {
+        try {
+            String url = "http://ms-auditoria/api/auditoria";
+            AuditRequest request = new AuditRequest(null, accion, tabla);
+            restTemplate.postForEntity(url, request, String.class);
+        } catch (Exception e) {
+            System.err.println("Error al auditar: " + e.getMessage());
+        }
+    }
 
     public String guardar(TipoAnimanga tipo) {
         if (tipo.getNombre() == null || tipo.getNombre().trim().isEmpty()) {
@@ -25,6 +40,7 @@ public class TipoAnimangaService {
         }
         
         tipoAnimangaRepository.save(tipo);
+        auditar("TipoAnimanga '" + tipo.getNombre() + "' creado", "tipo_animanga");
         return "TipoAnimanga guardado exitosamente";
     }
 
@@ -51,12 +67,15 @@ public class TipoAnimangaService {
         }
         
         tipoAnimangaRepository.save(tipoExistente);
+        auditar("TipoAnimanga '" + tipoExistente.getNombre() + "' actualizado", "tipo_animanga");
         return "TipoAnimanga actualizado exitosamente";
     }
 
     public boolean eliminar(Integer id) {
         if (tipoAnimangaRepository.existsById(id)) {
+            String nombre = tipoAnimangaRepository.findById(id).get().getNombre();
             tipoAnimangaRepository.deleteById(id);
+            auditar("TipoAnimanga '" + nombre + "' eliminado", "tipo_animanga");
             return true;
         }
         return false;

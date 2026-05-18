@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import com.animanga.ms_auth.dto.AuditRequest;
 import com.animanga.ms_auth.model.Permiso;
 import com.animanga.ms_auth.model.Rol;
 import com.animanga.ms_auth.repository.PermisoRepository;
@@ -20,14 +22,27 @@ public class RolService {
     @Autowired
     private PermisoRepository permisoRepository;
 
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private void auditar(String accion, String tabla) {
+        try {
+            String url = "http://ms-auditoria/api/auditoria";
+            AuditRequest request = new AuditRequest(null, accion, tabla);
+            restTemplate.postForEntity(url, request, String.class);
+        } catch (Exception e) {
+            System.err.println("Error al auditar: " + e.getMessage());
+        }
+    }
+
     public String guardar(Rol rol) {
        
         if (rolRepository.existsByNombre(rol.getNombre())) {
             return "El Rol '" + rol.getNombre() + "' ya existe";
         }
         
-        // 2. Si no existe, lo guardamos y retornamos éxito
         rolRepository.save(rol);
+        auditar("Rol '" + rol.getNombre() + "' creado", "rol");
         return "Rol guardado exitosamente";
 }
 
@@ -43,7 +58,9 @@ public class RolService {
     }
     public boolean eliminar(Integer id){
         if(rolRepository.existsById(id)){
+            String nombre = rolRepository.findById(id).get().getNombre();
             rolRepository.deleteById(id);
+            auditar("Rol '" + nombre + "' eliminado", "rol");
             return true;
         }
         return false;
@@ -60,6 +77,7 @@ public class RolService {
         }
         rol.getPermisos().add(permiso);
         rolRepository.save(rol);
+        auditar("Permiso '" + permiso.getAccion() + "' asignado al rol '" + rol.getNombre() + "'", "rol");
         return "Permiso Asignado";
     }
     public String removerPermiso(Integer rolId, Integer permisoId){
@@ -74,6 +92,7 @@ public class RolService {
         }
         rol.getPermisos().remove(permiso);
         rolRepository.save(rol);
+        auditar("Permiso '" + permiso.getAccion() + "' removido del rol '" + rol.getNombre() + "'", "rol");
         return "Permiso Removido";
     }
 }

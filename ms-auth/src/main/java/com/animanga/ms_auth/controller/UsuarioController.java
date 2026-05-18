@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.animanga.ms_auth.dto.PasswordRequest;
 import com.animanga.ms_auth.dto.UsuarioResponse;
 import com.animanga.ms_auth.model.Rol;
 import com.animanga.ms_auth.model.Usuario;
@@ -84,8 +85,8 @@ public class UsuarioController {
     
    }
    @PutMapping("/{id}/password")
-   public ResponseEntity <?> actualizaPassword(@PathVariable Long id, @RequestBody String nuevaPassword){
-    String resultado= usuarioService.actualizaPassword(id, nuevaPassword);
+   public ResponseEntity <?> actualizaPassword(@PathVariable Long id, @RequestBody PasswordRequest request){
+    String resultado= usuarioService.actualizaPassword(id, request.getPassword());
     if(resultado.equals("Usuario no encontrado")){
         return ResponseEntity.status(404).body(resultado);
     }
