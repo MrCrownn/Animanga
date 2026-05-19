@@ -1,5 +1,6 @@
 package com.animanga.ms_catalog.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,7 +12,9 @@ import org.springframework.web.client.RestTemplate;
 import com.animanga.ms_catalog.dto.AnimangaResumen;
 import com.animanga.ms_catalog.dto.AuditRequest;
 import com.animanga.ms_catalog.model.Animanga;
+import com.animanga.ms_catalog.model.TipoAnimanga;
 import com.animanga.ms_catalog.repository.AnimangaRepository;
+import com.animanga.ms_catalog.repository.TipoAnimangaRepository;
 
 @Service
 public class AnimangaService {
@@ -20,7 +23,20 @@ public class AnimangaService {
     private AnimangaRepository animangaRepository;
 
     @Autowired
+    private TipoAnimangaRepository tipoAnimangaRepository;
+
+    @Autowired
     private RestTemplate restTemplate;
+
+    private String validarEstadoSegunTipo(Animanga.EstadoEmision estado, TipoAnimanga tipo) {
+        if (estado == null || tipo == null) return null;
+        if ("Anime".equalsIgnoreCase(tipo.getNombre())) {
+            if (estado == Animanga.EstadoEmision.EN_PAUSA || estado == Animanga.EstadoEmision.DISCONTINUADO) {
+                return "El estado " + estado + " no es válido para Anime. Use EN_CURSO, FINALIZADO, PROXIMAMENTE o NO_ESPECIFICADO";
+            }
+        }
+        return null;
+    }
 
     private String validarEntidadProduccion(Long id, String tipo) {
         if (id == null) return null;
@@ -56,6 +72,15 @@ public class AnimangaService {
         if (animanga.getTipoAnimanga() == null || animanga.getTipoAnimanga().getIdTipo() == null) {
             return "El tipo de Animanga es obligatorio";
         }
+
+        TipoAnimanga tipoAnimanga = tipoAnimangaRepository.findById(animanga.getTipoAnimanga().getIdTipo()).orElse(null);
+        if (tipoAnimanga == null) {
+            return "El tipo de Animanga con id " + animanga.getTipoAnimanga().getIdTipo() + " no existe";
+        }
+        animanga.setTipoAnimanga(tipoAnimanga);
+
+        String errorEstado = validarEstadoSegunTipo(animanga.getEstadoEmision(), tipoAnimanga);
+        if (errorEstado != null) return errorEstado;
         
         if (animangaRepository.existsByTitulo(animanga.getTitulo())) {
             return "El Animanga '" + animanga.getTitulo() + "' ya existe";
@@ -109,10 +134,20 @@ public class AnimangaService {
             animangaExistente.setFechaEstreno(animangaActualizado.getFechaEstreno());
         }
         if (animangaActualizado.getEstadoEmision() != null) {
+            TipoAnimanga tipoParaValidar = animangaExistente.getTipoAnimanga();
+            if (animangaActualizado.getTipoAnimanga() != null && animangaActualizado.getTipoAnimanga().getIdTipo() != null) {
+                tipoParaValidar = tipoAnimangaRepository.findById(animangaActualizado.getTipoAnimanga().getIdTipo()).orElse(animangaExistente.getTipoAnimanga());
+            }
+            String errorEstado = validarEstadoSegunTipo(animangaActualizado.getEstadoEmision(), tipoParaValidar);
+            if (errorEstado != null) return errorEstado;
             animangaExistente.setEstadoEmision(animangaActualizado.getEstadoEmision());
         }
         if (animangaActualizado.getTipoAnimanga() != null && animangaActualizado.getTipoAnimanga().getIdTipo() != null) {
-            animangaExistente.setTipoAnimanga(animangaActualizado.getTipoAnimanga());
+            TipoAnimanga tipoAnimanga = tipoAnimangaRepository.findById(animangaActualizado.getTipoAnimanga().getIdTipo()).orElse(null);
+            if (tipoAnimanga == null) {
+                return "El tipo de Animanga con id " + animangaActualizado.getTipoAnimanga().getIdTipo() + " no existe";
+            }
+            animangaExistente.setTipoAnimanga(tipoAnimanga);
         }
         if (animangaActualizado.getIdEstudio() != null) {
             String errorEstudio = validarEntidadProduccion(animangaActualizado.getIdEstudio(), "estudio");
@@ -131,7 +166,21 @@ public class AnimangaService {
     }
 
     public List<AnimangaResumen> listarResumen() {
-        return animangaRepository.listarResumen();
+        List<Animanga> todos = animangaRepository.findAll();
+        List<AnimangaResumen> resumenes = new ArrayList<>();
+        for (Animanga a : todos) {
+            List<String> generos= new ArrayList<>();
+            a.getGeneros().forEach(g -> generos.add(g.getNombre()));
+            resumenes.add(new AnimangaResumen(
+                a.getIdAnimanga(),
+                a.getTitulo(),
+                a.getTipoAnimanga().getNombre(),
+                a.getEstadoEmision().name(),
+                generos
+           
+            ));
+        }
+        return resumenes;
     }
 
     public boolean eliminar(Long id) {

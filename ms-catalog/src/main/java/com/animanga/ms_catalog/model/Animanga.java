@@ -20,7 +20,7 @@ import jakarta.persistence.Table;
 public class Animanga {
 
     public enum EstadoEmision {
-        EN_CURSO, FINALIZADO
+        EN_CURSO, FINALIZADO, PROXIMAMENTE, EN_PAUSA, DISCONTINUADO, NO_ESPECIFICADO
     }
 
     @Id
@@ -35,7 +35,7 @@ public class Animanga {
     private LocalDate fechaEstreno;
 
     @Column(name= "estado_emision")
-    private EstadoEmision estadoEmision;
+    private EstadoEmision estadoEmision = EstadoEmision.EN_CURSO;
 
     @ManyToOne
     @JoinColumn(name = "idTipo")

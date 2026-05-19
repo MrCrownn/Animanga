@@ -96,7 +96,7 @@ Catálogo maestro de anime y manga + clasificación por géneros.
 | titulo | String | Título de la obra |
 | descripcion | Text | Sinopsis extendida |
 | fechaEstreno | LocalDate | Fecha de estreno |
-| estado_emision | Enum (EN_CURSO, FINALIZADO) | Estado de emisión |
+| estado_emision | Enum (EN_CURSO, FINALIZADO, PROXIMAMENTE, EN_PAUSA, DISCONTINUADO, NO_ESPECIFICADO) | Estado de emisión/publicación |
 | idTipo | Integer (FK) | FK to tipo_animanga |
 | id_estudio | Long | FK remota a entidad (estudio) |
 | id_autor | Long | FK remota a entidad (autor) |
@@ -251,33 +251,3 @@ Sistema de soporte técnico.
 
 ---
 
-## Resumen: v2.0 → v3.1
-
-| v2.0 | v3.1 |
-|------|------|
-| MS 1: Identity | MS 1: Identity 🆗 |
-| MS 2: Authorization | (fusionado en Identity) |
-| MS 3: Auditor | MS 2: Auditor 🆗 |
-| MS 4: Perfil | MS 3: Perfil 🆗 |
-| MS 5: Catalog | MS 4: Catalog + Taxonomy 🆗 |
-| MS 6: Taxonomy | (fusionado en Catalog) |
-| MS 7: Curation | MS 5: Curation |
-| MS 7: Media | MS 6: Media |
-| MS 8: Production | MS 7: Production 🆗 |
-| MS 9: Social | MS 8: Social |
-| MS 10: Library | MS 9: Library |
-| MS 11: HelpDesk | MS 10: HelpDesk |
-
-## Cantidad
-
-- **Microservicios implementados**: 5 de 10
-- **Tablas implementadas**: 13 de 21
-- **Por implementar**: Curation, Media, Social, Library, HelpDesk
-
-## Distribución sugerida (3 personas)
-
-| Persona | MS |
-|---------|-----|
-| 1 | Identity, Auditor, Perfil 🆗 |
-| 2 | Catalog+Taxonomy, Media, Production 🆗 |
-| 3 | Curation, Social, Library, HelpDesk |

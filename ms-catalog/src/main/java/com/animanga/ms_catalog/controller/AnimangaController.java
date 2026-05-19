@@ -38,6 +38,9 @@ public class AnimangaController {
         if (animanga.getTipoAnimanga() == null || animanga.getTipoAnimanga().getIdTipo() == null) {
             return ResponseEntity.badRequest().body("El tipo de Animanga es obligatorio");
         }
+        if (animanga.getEstadoEmision() == null) {
+            return ResponseEntity.badRequest().body("El estado de emisión es obligatorio (EN_CURSO, FINALIZADO, PROXIMAMENTE, EN_PAUSA, DISCONTINUADO, NO_ESPECIFICADO)");
+        }
         
         String respuesta = animangaService.guardar(animanga);
         

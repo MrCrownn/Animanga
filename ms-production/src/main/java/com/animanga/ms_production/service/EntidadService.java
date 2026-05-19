@@ -9,13 +9,23 @@ import org.springframework.web.client.RestTemplate;
 
 import com.animanga.ms_production.dto.AuditRequest;
 import com.animanga.ms_production.model.Entidad;
+import com.animanga.ms_production.model.Nacionalidad;
+import com.animanga.ms_production.model.TipoEntidad;
 import com.animanga.ms_production.repository.EntidadRepository;
+import com.animanga.ms_production.repository.NacionalidadRepository;
+import com.animanga.ms_production.repository.TipoEntidadRepository;
 
 @Service
 public class EntidadService {
 
     @Autowired
     private EntidadRepository entidadRepository;
+
+    @Autowired
+    private TipoEntidadRepository tipoEntidadRepository;
+
+    @Autowired
+    private NacionalidadRepository nacionalidadRepository;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -36,6 +46,20 @@ public class EntidadService {
         }
         if (entidad.getTipoEntidad() == null || entidad.getTipoEntidad().getIdTipo() == null) {
             return "El tipo de entidad es obligatorio";
+        }
+
+        TipoEntidad tipoEntidad = tipoEntidadRepository.findById(entidad.getTipoEntidad().getIdTipo()).orElse(null);
+        if (tipoEntidad == null) {
+            return "El tipo de entidad con id " + entidad.getTipoEntidad().getIdTipo() + " no existe";
+        }
+        entidad.setTipoEntidad(tipoEntidad);
+
+        if (entidad.getNacionalidad() != null && entidad.getNacionalidad().getIdNacionalidad() != null) {
+            Nacionalidad nacionalidad = nacionalidadRepository.findById(entidad.getNacionalidad().getIdNacionalidad()).orElse(null);
+            if (nacionalidad == null) {
+                return "La nacionalidad con id " + entidad.getNacionalidad().getIdNacionalidad() + " no existe";
+            }
+            entidad.setNacionalidad(nacionalidad);
         }
 
         if (entidadRepository.existsByNombreAndTipoEntidad_IdTipo(
@@ -75,10 +99,18 @@ public class EntidadService {
             entidadExistente.setNombre(entidadActualizada.getNombre());
         }
         if (entidadActualizada.getTipoEntidad() != null && entidadActualizada.getTipoEntidad().getIdTipo() != null) {
-            entidadExistente.setTipoEntidad(entidadActualizada.getTipoEntidad());
+            TipoEntidad tipoEntidad = tipoEntidadRepository.findById(entidadActualizada.getTipoEntidad().getIdTipo()).orElse(null);
+            if (tipoEntidad == null) {
+                return "El tipo de entidad con id " + entidadActualizada.getTipoEntidad().getIdTipo() + " no existe";
+            }
+            entidadExistente.setTipoEntidad(tipoEntidad);
         }
         if (entidadActualizada.getNacionalidad() != null && entidadActualizada.getNacionalidad().getIdNacionalidad() != null) {
-            entidadExistente.setNacionalidad(entidadActualizada.getNacionalidad());
+            Nacionalidad nacionalidad = nacionalidadRepository.findById(entidadActualizada.getNacionalidad().getIdNacionalidad()).orElse(null);
+            if (nacionalidad == null) {
+                return "La nacionalidad con id " + entidadActualizada.getNacionalidad().getIdNacionalidad() + " no existe";
+            }
+            entidadExistente.setNacionalidad(nacionalidad);
         }
         if (entidadActualizada.getFechaNacimiento() != null) {
             entidadExistente.setFechaNacimiento(entidadActualizada.getFechaNacimiento());

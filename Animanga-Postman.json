@@ -18,7 +18,7 @@
 					}
 				},
 				{
-					"name": "Crear Tipo Entidad",
+					"name": "Crear Tipo Entidad (ESTUDIO)",
 					"request": {
 						"method": "POST",
 						"header": [{"key": "Content-Type", "value": "application/json"}],
@@ -27,11 +27,38 @@
 					}
 				},
 				{
-					"name": "Crear Entidad (Studio Ghibli)",
+					"name": "Crear Tipo Entidad (AUTOR)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"nombre\": \"AUTOR\"}"},
+						"url": {"raw": "http://localhost:8082/api/tipos-entidad", "host": ["localhost"], "port": "8082", "path": ["api", "tipos-entidad"]}
+					}
+				},
+				{
+					"name": "❌ Crear Entidad (tipo inválido)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"nombre\": \"Test\", \"tipoEntidad\": {\"idTipo\": 999}, \"nacionalidad\": {\"idNacionalidad\": 1}}"},
+						"url": {"raw": "http://localhost:8082/api/entidades", "host": ["localhost"], "port": "8082", "path": ["api", "entidades"]}
+					}
+				},
+				{
+					"name": "✅ Crear Studio Ghibli (estudio)",
 					"request": {
 						"method": "POST",
 						"header": [{"key": "Content-Type", "value": "application/json"}],
 						"body": {"mode": "raw", "raw": "{\"nombre\": \"Studio Ghibli\", \"tipoEntidad\": {\"idTipo\": 1}, \"nacionalidad\": {\"idNacionalidad\": 1}}"},
+						"url": {"raw": "http://localhost:8082/api/entidades", "host": ["localhost"], "port": "8082", "path": ["api", "entidades"]}
+					}
+				},
+				{
+					"name": "✅ Crear Hayao Miyazaki (autor)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"nombre\": \"Hayao Miyazaki\", \"tipoEntidad\": {\"idTipo\": 2}, \"nacionalidad\": {\"idNacionalidad\": 1}, \"fechaNacimiento\": \"1941-01-05\"}"},
 						"url": {"raw": "http://localhost:8082/api/entidades", "host": ["localhost"], "port": "8082", "path": ["api", "entidades"]}
 					}
 				}
@@ -50,7 +77,7 @@
 					}
 				},
 				{
-					"name": "Crear Género",
+					"name": "Crear Género (Shonen)",
 					"request": {
 						"method": "POST",
 						"header": [{"key": "Content-Type", "value": "application/json"}],
@@ -59,20 +86,65 @@
 					}
 				},
 				{
-					"name": "❌ Crear Animanga (estudio inválido)",
+					"name": "Crear Género (Fantasía)",
 					"request": {
 						"method": "POST",
 						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"titulo\": \"Test Fallido\", \"fechaEstreno\": \"2024-01-01\", \"tipoAnimanga\": {\"idTipo\": 1}, \"idEstudio\": 999}"},
+						"body": {"mode": "raw", "raw": "{\"nombre\": \"Fantasía\"}"},
+						"url": {"raw": "http://localhost:8081/api/generos", "host": ["localhost"], "port": "8081", "path": ["api", "generos"]}
+					}
+				},
+				{
+					"name": "❌ Crear Animanga (tipo inválido)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"titulo\": \"Test\", \"fechaEstreno\": \"2024-01-01\", \"tipoAnimanga\": {\"idTipo\": 999}, \"estadoEmision\": \"EN_CURSO\"}"},
 						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
 					}
 				},
 				{
-					"name": "✅ Crear Animanga (éxito)",
+					"name": "❌ Crear Animanga (estudio inválido)",
 					"request": {
 						"method": "POST",
 						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"titulo\": \"Mi Vecino Totoro\", \"fechaEstreno\": \"1988-04-16\", \"tipoAnimanga\": {\"idTipo\": 1}, \"idEstudio\": 1}"},
+						"body": {"mode": "raw", "raw": "{\"titulo\": \"Test\", \"fechaEstreno\": \"2024-01-01\", \"tipoAnimanga\": {\"idTipo\": 1}, \"idEstudio\": 999, \"estadoEmision\": \"EN_CURSO\"}"},
+						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
+					}
+				},
+				{
+					"name": "✅ Crear Mi Vecino Totoro (completo)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"titulo\": \"Mi Vecino Totoro\", \"descripcion\": \"Dos niñas se mudan al campo y conocen a un espíritu del bosque\", \"fechaEstreno\": \"1988-04-16\", \"tipoAnimanga\": {\"idTipo\": 1}, \"idEstudio\": 1, \"idAutor\": 2, \"estadoEmision\": \"EN_CURSO\", \"generos\": [{\"idGenero\": 1}, {\"idGenero\": 2}]}"},
+						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
+					}
+				},
+				{
+					"name": "✅ Crear Manga en pausa",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"titulo\": \"Berserk\", \"descripcion\": \"Manga de fantasía oscura\", \"fechaEstreno\": \"1989-08-25\", \"tipoAnimanga\": {\"idTipo\": 2}, \"idAutor\": 2, \"estadoEmision\": \"EN_PAUSA\", \"generos\": [{\"idGenero\": 1}]}"},
+						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
+					}
+				},
+				{
+					"name": "✅ Crear Anime próximo a estrenar",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"titulo\": \"Nuevo Anime\", \"fechaEstreno\": \"2026-10-01\", \"tipoAnimanga\": {\"idTipo\": 1}, \"estadoEmision\": \"PROXIMAMENTE\"}"},
+						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
+					}
+				},
+				{
+					"name": "❌ Crear Anime con EN_PAUSA (debe fallar)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"titulo\": \"AnimeInvalido\", \"fechaEstreno\": \"2026-01-01\", \"tipoAnimanga\": {\"idTipo\": 1}, \"estadoEmision\": \"EN_PAUSA\"}"},
 						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
 					}
 				},
@@ -81,6 +153,22 @@
 					"request": {
 						"method": "GET",
 						"url": {"raw": "http://localhost:8081/api/animanga/resumen", "host": ["localhost"], "port": "8081", "path": ["api", "animanga", "resumen"]}
+					}
+				},
+				{
+					"name": "Actualizar Animanga (PUT)",
+					"request": {
+						"method": "PUT",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"titulo\": \"Mi Vecino Totoro (Editado)\", \"descripcion\": \"Un clásico del estudio Ghibli\"}"},
+						"url": {"raw": "http://localhost:8081/api/animanga/1", "host": ["localhost"], "port": "8081", "path": ["api", "animanga", "1"]}
+					}
+				},
+				{
+					"name": "Eliminar Animanga (DELETE)",
+					"request": {
+						"method": "DELETE",
+						"url": {"raw": "http://localhost:8081/api/animanga/1", "host": ["localhost"], "port": "8081", "path": ["api", "animanga", "1"]}
 					}
 				}
 			]
@@ -160,17 +248,17 @@
 					}
 				},
 				{
-					"name": "Logs por usuario",
-					"request": {
-						"method": "GET",
-						"url": {"raw": "http://localhost:8084/api/auditoria/usuario/1", "host": ["localhost"], "port": "8084", "path": ["api", "auditoria", "usuario", "1"]}
-					}
-				},
-				{
-					"name": "Logs por tabla",
+					"name": "Logs de animanga",
 					"request": {
 						"method": "GET",
 						"url": {"raw": "http://localhost:8084/api/auditoria/tabla/animanga", "host": ["localhost"], "port": "8084", "path": ["api", "auditoria", "tabla", "animanga"]}
+					}
+				},
+				{
+					"name": "Logs de usuario",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8084/api/auditoria/tabla/usuario", "host": ["localhost"], "port": "8084", "path": ["api", "auditoria", "tabla", "usuario"]}
 					}
 				}
 			]
