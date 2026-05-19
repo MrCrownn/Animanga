@@ -1,7 +1,7 @@
 package com.animanga.ms_auth.dto;
 
 public class PasswordRequest {
-
+   
     private String password;
 
     public PasswordRequest() {

@@ -15,7 +15,6 @@ public interface AnimangaRepository  extends JpaRepository<Animanga, Long> {
     List <Animanga> findByTitulo(String titulo);
     List<Animanga> findByTipoAnimanga_Nombre(String nombreTipo);
     boolean existsByTitulo(String titulo);
-    boolean existsById(Long id);
 
     @Query(value = """
             SELECT a.id_animanga, a.titulo, t.nombre AS nombreTipo, a.estado_emision

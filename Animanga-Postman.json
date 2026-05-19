@@ -1,0 +1,191 @@
+{
+	"info": {
+		"name": "Animanga Microservices",
+		"description": "Colección para presentación - Proyecto Animanga",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Production",
+			"item": [
+				{
+					"name": "Crear Nacionalidad",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"pais\": \"Japón\"}"},
+						"url": {"raw": "http://localhost:8082/api/nacionalidades", "host": ["localhost"], "port": "8082", "path": ["api", "nacionalidades"]}
+					}
+				},
+				{
+					"name": "Crear Tipo Entidad",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"nombre\": \"ESTUDIO\"}"},
+						"url": {"raw": "http://localhost:8082/api/tipos-entidad", "host": ["localhost"], "port": "8082", "path": ["api", "tipos-entidad"]}
+					}
+				},
+				{
+					"name": "Crear Entidad (Studio Ghibli)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"nombre\": \"Studio Ghibli\", \"tipoEntidad\": {\"idTipo\": 1}, \"nacionalidad\": {\"idNacionalidad\": 1}}"},
+						"url": {"raw": "http://localhost:8082/api/entidades", "host": ["localhost"], "port": "8082", "path": ["api", "entidades"]}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Catalog",
+			"item": [
+				{
+					"name": "Crear Tipo Animanga",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"nombre\": \"Anime\"}"},
+						"url": {"raw": "http://localhost:8081/api/tipos", "host": ["localhost"], "port": "8081", "path": ["api", "tipos"]}
+					}
+				},
+				{
+					"name": "Crear Género",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"nombre\": \"Shonen\"}"},
+						"url": {"raw": "http://localhost:8081/api/generos", "host": ["localhost"], "port": "8081", "path": ["api", "generos"]}
+					}
+				},
+				{
+					"name": "❌ Crear Animanga (estudio inválido)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"titulo\": \"Test Fallido\", \"fechaEstreno\": \"2024-01-01\", \"tipoAnimanga\": {\"idTipo\": 1}, \"idEstudio\": 999}"},
+						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
+					}
+				},
+				{
+					"name": "✅ Crear Animanga (éxito)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"titulo\": \"Mi Vecino Totoro\", \"fechaEstreno\": \"1988-04-16\", \"tipoAnimanga\": {\"idTipo\": 1}, \"idEstudio\": 1}"},
+						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
+					}
+				},
+				{
+					"name": "Listar Resumen Animanga",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8081/api/animanga/resumen", "host": ["localhost"], "port": "8081", "path": ["api", "animanga", "resumen"]}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Auth (Identity)",
+			"item": [
+				{
+					"name": "Crear Rol",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"nombre\": \"Admin\"}"},
+						"url": {"raw": "http://localhost:8083/api/roles", "host": ["localhost"], "port": "8083", "path": ["api", "roles"]}
+					}
+				},
+				{
+					"name": "Registrar Usuario",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"username\": \"test\", \"email\": \"test@test.cl\", \"password_hash\": \"123456\", \"rol\": {\"id\": 1}}"},
+						"url": {"raw": "http://localhost:8083/api/usuarios/registro", "host": ["localhost"], "port": "8083", "path": ["api", "usuarios", "registro"]}
+					}
+				},
+				{
+					"name": "✅ Login exitoso",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"username\": \"test\", \"password_hash\": \"123456\"}"},
+						"url": {"raw": "http://localhost:8083/api/usuarios/login", "host": ["localhost"], "port": "8083", "path": ["api", "usuarios", "login"]}
+					}
+				},
+				{
+					"name": "❌ Login fallido",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"username\": \"test\", \"password_hash\": \"xxxx\"}"},
+						"url": {"raw": "http://localhost:8083/api/usuarios/login", "host": ["localhost"], "port": "8083", "path": ["api", "usuarios", "login"]}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Perfil (validación vs Auth)",
+			"item": [
+				{
+					"name": "❌ Crear Perfil (usuario inválido)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"idUsuario\": 999}"},
+						"url": {"raw": "http://localhost:8085/api/perfiles", "host": ["localhost"], "port": "8085", "path": ["api", "perfiles"]}
+					}
+				},
+				{
+					"name": "✅ Crear Perfil (éxito)",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\"idUsuario\": 1, \"biografia\": \"Hola mundo\", \"avatarUrl\": \"https://example.com/avatar.png\"}"},
+						"url": {"raw": "http://localhost:8085/api/perfiles", "host": ["localhost"], "port": "8085", "path": ["api", "perfiles"]}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Auditoría (log centralizado)",
+			"item": [
+				{
+					"name": "Listar todos los logs",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8084/api/auditoria", "host": ["localhost"], "port": "8084", "path": ["api", "auditoria"]}
+					}
+				},
+				{
+					"name": "Logs por usuario",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8084/api/auditoria/usuario/1", "host": ["localhost"], "port": "8084", "path": ["api", "auditoria", "usuario", "1"]}
+					}
+				},
+				{
+					"name": "Logs por tabla",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8084/api/auditoria/tabla/animanga", "host": ["localhost"], "port": "8084", "path": ["api", "auditoria", "tabla", "animanga"]}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Gateway (ruteo)",
+			"item": [
+				{
+					"name": "Listar animanga vía Gateway",
+					"request": {
+						"method": "GET",
+						"url": {"raw": "http://localhost:8080/catalogo/api/animanga", "host": ["localhost"], "port": "8080", "path": ["catalogo", "api", "animanga"]}
+					}
+				}
+			]
+		}
+	]
+}

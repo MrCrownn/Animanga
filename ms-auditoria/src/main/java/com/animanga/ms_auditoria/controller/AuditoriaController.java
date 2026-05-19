@@ -3,6 +3,7 @@ package com.animanga.ms_auditoria.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,8 +37,12 @@ public class AuditoriaController {
     }
 
     @GetMapping("/{id}")
-    public AuditoriaSistema obtenerPorId(@PathVariable Long id) {
-        return auditoriaService.obtenerPorId(id);
+    public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
+        AuditoriaSistema log = auditoriaService.obtenerPorId(id);
+        if (log == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Log no encontrado");
+        }
+        return ResponseEntity.ok(log);
     }
 
     @GetMapping("/usuario/{idUsuario}")
@@ -55,6 +60,9 @@ public class AuditoriaController {
 
         String respuesta = auditoriaService.eliminarLog(id);
 
+        if (respuesta.equals("El log no existe")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(respuesta);
+        }
         return ResponseEntity.ok(respuesta);
     }
 }
