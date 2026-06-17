@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,6 +25,9 @@ public class UsuarioService {
 
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     private void auditar(Long idUsuario, String accion, String tabla) {
         try {
@@ -118,12 +122,18 @@ public class UsuarioService {
         if (existeEmail(usuario.getEmail())) {
             return "Error: Correo electrónico ocupado";
         }
+        String passwordEncriptada = passwordEncoder.encode(usuario.getPassword_hash());
+        usuario.setPassword_hash(passwordEncriptada);
         usuarioRepository.save(usuario);
         auditar(usuario.getId(), "Usuario registrado: " + usuario.getUsername(), "usuario");
         return "Usuario registrado exitosamente";
         }
         public Usuario obtenerUsuario(Long id){
         return usuarioRepository.findById(id).orElse(null);
+        }
+
+        public Usuario obtenerPorEmail(String email){
+            return usuarioRepository.findByEmail(email);
         }
         public List <Usuario> obtenerTodos(){
             return this.usuarioRepository.findAll();
@@ -148,7 +158,8 @@ public class UsuarioService {
             usuarioExistente.setEmail(usuarioActualizado.getEmail());
         }
         if (usuarioActualizado.getPassword_hash() != null){
-            usuarioExistente.setPassword_hash(usuarioActualizado.getPassword_hash());
+            String passwordEncriptada = passwordEncoder.encode(usuarioActualizado.getPassword_hash());
+            usuarioExistente.setPassword_hash(passwordEncriptada);
         }
         if (usuarioActualizado.getRol() != null && usuarioActualizado.getRol().getId() != null){
             Optional<Rol> rolOpt= rolRepository.findById(usuarioActualizado.getRol().getId());
@@ -169,7 +180,8 @@ public class UsuarioService {
         if (usuario == null){
             return "Usuario no encontrado";
         }
-        usuario.setPassword_hash(nuevaPassword);
+        String passwordEncriptada = passwordEncoder.encode(nuevaPassword);
+        usuario.setPassword_hash(passwordEncriptada);
         usuarioRepository.save(usuario);
         return "Contraseña actualizada exitosamente";
     }

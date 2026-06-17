@@ -51,6 +51,7 @@ public class Usuario {
     public void setEmail(String email) {
         this.email = email;
     }
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public String getPassword_hash() {
         return password_hash;
     }
