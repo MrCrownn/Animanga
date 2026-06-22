@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -25,6 +26,9 @@ public class UsuarioService {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private void auditar(Long idUsuario, String accion, String tabla) {
         try {
             String url = "http://ms-auditoria/api/auditoria";
@@ -32,24 +36,6 @@ public class UsuarioService {
             restTemplate.postForEntity(url, request, String.class);
         } catch (Exception e) {
             System.err.println("Error al auditar: " + e.getMessage());
-        }
-    }
-    public String login(String identificador, String password){
-        Usuario user= usuarioRepository.findByUsername(identificador);
-        if (user==null){
-            user=usuarioRepository.findByEmail(identificador);
-        }
-        if (user == null){
-            auditar(null, "Intento de login fallido - usuario no encontrado: " + identificador, "usuario");
-            return "No encontrado";
-        }
-        if(user.getPassword_hash().equals(password)){
-            auditar(user.getId(), "Inicio de sesión exitoso", "usuario");
-            return "Logeado";
-        }
-        else{
-            auditar(user.getId(), "Intento de login fallido - contraseña incorrecta", "usuario");
-            return "Password Incorrecto";
         }
     }
 
@@ -118,6 +104,7 @@ public class UsuarioService {
         if (existeEmail(usuario.getEmail())) {
             return "Error: Correo electrónico ocupado";
         }
+        usuario.setPassword_hash(passwordEncoder.encode(usuario.getPassword_hash()));
         usuarioRepository.save(usuario);
         auditar(usuario.getId(), "Usuario registrado: " + usuario.getUsername(), "usuario");
         return "Usuario registrado exitosamente";
@@ -148,7 +135,7 @@ public class UsuarioService {
             usuarioExistente.setEmail(usuarioActualizado.getEmail());
         }
         if (usuarioActualizado.getPassword_hash() != null){
-            usuarioExistente.setPassword_hash(usuarioActualizado.getPassword_hash());
+            usuarioExistente.setPassword_hash(passwordEncoder.encode(usuarioActualizado.getPassword_hash()));
         }
         if (usuarioActualizado.getRol() != null && usuarioActualizado.getRol().getId() != null){
             Optional<Rol> rolOpt= rolRepository.findById(usuarioActualizado.getRol().getId());
@@ -164,12 +151,20 @@ public class UsuarioService {
         return usuarioRepository.encontrarUsuarioDTO(id);
     }
 
+    public Usuario obtenerPorUsernameOEmail(String identificador) {
+        Usuario usuario = usuarioRepository.findByUsername(identificador);
+        if (usuario == null) {
+            usuario = usuarioRepository.findByEmail(identificador);
+        }
+        return usuario;
+    }
+
     public String actualizaPassword(Long id, String nuevaPassword){
         Usuario usuario= usuarioRepository.findById(id).orElse(null);
         if (usuario == null){
             return "Usuario no encontrado";
         }
-        usuario.setPassword_hash(nuevaPassword);
+        usuario.setPassword_hash(passwordEncoder.encode(nuevaPassword));
         usuarioRepository.save(usuario);
         return "Contraseña actualizada exitosamente";
     }

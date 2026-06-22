@@ -2,6 +2,8 @@ package com.animanga.ms_auth.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,6 +24,7 @@ public class Usuario {
     @Column(unique=true, nullable=false)
     private String email;
     private String password_hash;
+    @Enumerated(EnumType.STRING)
     private EstadoCuenta estadoCuenta;
     @ManyToOne
     @JoinColumn(name = "id_rol")

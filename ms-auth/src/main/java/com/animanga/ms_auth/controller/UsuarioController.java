@@ -1,10 +1,14 @@
     package com.animanga.ms_auth.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +23,7 @@ import com.animanga.ms_auth.dto.PasswordRequest;
 import com.animanga.ms_auth.dto.UsuarioResponse;
 import com.animanga.ms_auth.model.Rol;
 import com.animanga.ms_auth.model.Usuario;
+import com.animanga.ms_auth.service.JwtService;
 import com.animanga.ms_auth.service.UsuarioService;
 
 @RestController
@@ -26,6 +31,12 @@ import com.animanga.ms_auth.service.UsuarioService;
 public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtService jwtService;
     @PostMapping("/registro")
     public ResponseEntity <?>  registrar(@RequestBody Usuario usuario){
         String respuesta= this.usuarioService.registrarUsuario(usuario);
@@ -150,31 +161,35 @@ public class UsuarioController {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado con id: " + id);
    }
    @PostMapping("/login")
-   public ResponseEntity <String> login (@RequestBody Usuario loginData){
-        if (loginData == null || 
-            (loginData.getUsername() == null && loginData.getEmail() == null)) 
-        {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Debe proporcionar username o email");
-    }
-    
-        String autenticador = (loginData.getUsername() != null && !loginData.getUsername().isBlank()) 
-            ? loginData.getUsername() 
-            : loginData.getEmail();
+   public ResponseEntity<?> login(@RequestBody Usuario loginData) {
+        String autenticador = loginData.getUsername();
+        if (autenticador == null || autenticador.isBlank()) {
+            autenticador = loginData.getEmail();
+        }
+        if (autenticador == null || autenticador.isBlank()) {
+            return ResponseEntity.badRequest().body("Debe proporcionar username o email");
+        }
 
-        String resultado= usuarioService.login(autenticador, loginData.getPassword_hash());
-        if(resultado.equals("No encontrado")){
-            return ResponseEntity.status(404).body("Usuario/email no existe");      
+        try {
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(autenticador, loginData.getPassword_hash())
+            );
+
+            Usuario usuario = usuarioService.obtenerPorUsernameOEmail(autenticador);
+            String token = jwtService.generarToken(usuario);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("id", usuario.getId());
+            response.put("username", usuario.getUsername());
+            response.put("email", usuario.getEmail());
+            response.put("rol", usuario.getRol().getNombre());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(401).body("Usuario o contraseña incorrectos");
         }
-        if(resultado.equals("Logeado")){
-            return ResponseEntity.ok().body("Usuario Logeado");
-        }
-        if(resultado.equals("Password Incorrecto")){
-            return ResponseEntity.status(401).body("Combinacion usuario/password incorrecta");
-        }
-        
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resultado);
-        
     }
 
 }
