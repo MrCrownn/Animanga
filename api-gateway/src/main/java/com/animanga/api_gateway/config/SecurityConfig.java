@@ -3,6 +3,8 @@ package com.animanga.api_gateway.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -10,6 +12,7 @@ import org.springframework.security.oauth2.server.resource.authentication.Reacti
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -32,13 +35,10 @@ public class SecurityConfig {
                         "/auth/api/usuarios/login",
                         "/auth/api/usuarios/registro"
                     ).permitAll()
-                    .pathMatchers(HttpMethod.GET,
-                        "/auth/api/roles",
-                        "/auth/api/roles/**"
-                    ).permitAll()
-
                     // --- ADMIN only ---
                     .pathMatchers("/auth/api/usuarios/**").hasRole("ADMIN")
+                    .pathMatchers("/auth/api/roles/**").hasRole("ADMIN")
+                    .pathMatchers("/auth/api/permisos/**").hasRole("ADMIN")
 
                     // --- ADMIN or GESTOR: write operations on production, catalog, media, perfil, auditoria ---
                     .pathMatchers(HttpMethod.POST, "/produccion/api/**").hasAnyRole("ADMIN", "GESTOR")
@@ -53,8 +53,8 @@ public class SecurityConfig {
                     .pathMatchers(HttpMethod.PUT, "/media/api/**").hasAnyRole("ADMIN", "GESTOR")
                     .pathMatchers(HttpMethod.DELETE, "/media/api/**").hasAnyRole("ADMIN", "GESTOR")
 
-                    .pathMatchers(HttpMethod.POST, "/perfil/api/**").hasAnyRole("ADMIN", "GESTOR")
-                    .pathMatchers(HttpMethod.PUT, "/perfil/api/**").hasAnyRole("ADMIN", "GESTOR")
+                    .pathMatchers(HttpMethod.POST, "/perfil/api/**").authenticated()
+                    .pathMatchers(HttpMethod.PUT, "/perfil/api/**").authenticated()
                     .pathMatchers(HttpMethod.DELETE, "/perfil/api/**").hasAnyRole("ADMIN", "GESTOR")
 
                     .pathMatchers(HttpMethod.GET, "/auditoria/api/**").hasAnyRole("ADMIN", "GESTOR")
@@ -78,6 +78,20 @@ public class SecurityConfig {
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                     .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                )
+                .exceptionHandling(ex -> ex
+                    .authenticationEntryPoint((exchange, ex2) -> {
+                        exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+                        byte[] body = "{\"error\": \"No autenticado\", \"mensaje\": \"Se requiere token JWT válido\"}".getBytes();
+                        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(body)));
+                    })
+                    .accessDeniedHandler((exchange, ex2) -> {
+                        exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                        exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
+                        byte[] body = "{\"error\": \"Acceso denegado\", \"mensaje\": \"No tienes permisos para acceder a este recurso\"}".getBytes();
+                        return exchange.getResponse().writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(body)));
+                    })
                 )
                 .build();
     }

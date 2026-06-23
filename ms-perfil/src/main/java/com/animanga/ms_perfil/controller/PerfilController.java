@@ -28,15 +28,20 @@ public class PerfilController {
     private PerfilService perfilService;
 
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody Perfil perfil, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
+    public ResponseEntity<?> crear(
+            @RequestBody Perfil perfil,
+            @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId,
+            @Parameter(hidden = true) @RequestHeader(value = "X-User-Rol", required = false) String userRol) {
 
-        String respuesta = perfilService.guardar(perfil, userId);
+        String respuesta = perfilService.guardar(perfil, userId, userRol);
 
         if (respuesta.equals("Perfil guardado exitosamente")) {
             return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
-        } else {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(respuesta);
         }
+        if (respuesta.contains("No puedes") || respuesta.contains("para otro usuario")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(respuesta);
+        }
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(respuesta);
     }
 
     @GetMapping

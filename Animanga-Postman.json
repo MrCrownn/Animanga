@@ -26,9 +26,15 @@
 			"name": "0. Setup Inicial (Auth)",
 			"item": [
 				{
-					"name": "Listar Roles (con permisos)",
+					"name": "✅ Listar Roles (con permisos)",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/auth/api/roles",
 							"host": [
@@ -43,9 +49,15 @@
 					}
 				},
 				{
-					"name": "Listar Permisos",
+					"name": "✅ Listar Permisos",
 					"request": {
 						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
 						"url": {
 							"raw": "{{baseUrl}}/auth/api/permisos",
 							"host": [
@@ -1821,7 +1833,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"idAnimanga\": 1, \"url\": \"https://example.com/totoro.jpg\", \"tipo\": \"PORTADA\"}"
+							"raw": "{\"idAnimanga\": 1, \"tipoRecurso\": \"PORTADA\", \"urlRecurso\": \"https://example.com/totoro.jpg\"}"
 						},
 						"url": {
 							"raw": "{{baseUrl}}/media/api/recursos",
@@ -2203,6 +2215,345 @@
 								"api",
 								"auditoria"
 							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Z. Demo Rápida (10 min)",
+			"item": [
+				{
+					"name": "1. ✅ Login Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set('adminToken', jsonData.token);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"admin\", \"password_hash\": \"admin123\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/api/usuarios/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "api", "usuarios", "login"]
+						}
+					}
+				},
+				{
+					"name": "2. ✅ Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"pm.collectionVariables.set('userToken', jsonData.token);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"user\", \"password_hash\": \"user123\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/api/usuarios/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "api", "usuarios", "login"]
+						}
+					}
+				},
+				{
+					"name": "3. 🔒 User 403 en Production",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{userToken}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Test\", \"tipoEntidad\": {\"idTipo\": 1}, \"nacionalidad\": {\"idNacionalidad\": 1}}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/entidades",
+							"host": ["{{baseUrl}}"],
+							"path": ["produccion", "api", "entidades"]
+						}
+					}
+				},
+				{
+					"name": "4. ✅ Setup Catálogo (Tipo + Género)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{adminToken}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Anime\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/tipos",
+							"host": ["{{baseUrl}}"],
+							"path": ["catalogo", "api", "tipos"]
+						}
+					}
+				},
+				{
+					"name": "5. ✅ Setup Catálogo (Género)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{adminToken}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Shonen\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/generos",
+							"host": ["{{baseUrl}}"],
+							"path": ["catalogo", "api", "generos"]
+						}
+					}
+				},
+				{
+					"name": "6. ✅ Setup Production (Nacionalidad + Tipo + Entidad)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{adminToken}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"pais\": \"Japón\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/nacionalidades",
+							"host": ["{{baseUrl}}"],
+							"path": ["produccion", "api", "nacionalidades"]
+						}
+					}
+				},
+				{
+					"name": "7. ✅ Setup Production (Tipo Entidad)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{adminToken}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"ESTUDIO\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/tipos-entidad",
+							"host": ["{{baseUrl}}"],
+							"path": ["produccion", "api", "tipos-entidad"]
+						}
+					}
+				},
+				{
+					"name": "8. ✅ Setup Production (Entidad)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{adminToken}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Studio Ghibli\", \"tipoEntidad\": {\"idTipo\": 1}, \"nacionalidad\": {\"idNacionalidad\": 1}}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/entidades",
+							"host": ["{{baseUrl}}"],
+							"path": ["produccion", "api", "entidades"]
+						}
+					}
+				},
+				{
+					"name": "9. 👤 User Crea Propuesta",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{userToken}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"datosJson\": {\n    \"titulo\": \"One Punch Man\",\n    \"descripcion\": \"Anime de acción y comedia\",\n    \"fechaEstreno\": \"2015-10-04\",\n    \"tipoAnimanga\": {\"idTipo\": 1},\n    \"idEstudio\": 1,\n    \"estadoEmision\": \"EN_CURSO\",\n    \"generos\": [{\"idGenero\": 1}, {\"idGenero\": 4}]\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas",
+							"host": ["{{baseUrl}}"],
+							"path": ["curacion", "api", "propuestas"]
+						}
+					}
+				},
+				{
+					"name": "10. ❌ User Intenta Aprobar (debe fallar 403)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{userToken}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"estado\": \"APROBADO\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas/1/estado",
+							"host": ["{{baseUrl}}"],
+							"path": ["curacion", "api", "propuestas", "1", "estado"]
+						}
+					}
+				},
+				{
+					"name": "11. ✅ Admin Aprueba (auto-crea en Catálogo)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{adminToken}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"estado\": \"APROBADO\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas/1/estado",
+							"host": ["{{baseUrl}}"],
+							"path": ["curacion", "api", "propuestas", "1", "estado"]
+						}
+					}
+				},
+				{
+					"name": "12. ✅ Ver Catálogo (animanga auto-creado)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{adminToken}}"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/animanga",
+							"host": ["{{baseUrl}}"],
+							"path": ["catalogo", "api", "animanga"]
+						}
+					}
+				},
+				{
+					"name": "13. ✅ Agregar Imagen (Media)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{adminToken}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"idAnimanga\": 1, \"tipoRecurso\": \"PORTADA\", \"urlRecurso\": \"https://example.com/opm.jpg\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/media/api/recursos",
+							"host": ["{{baseUrl}}"],
+							"path": ["media", "api", "recursos"]
+						}
+					}
+				},
+				{
+					"name": "14. ✅ Listar Media por Animanga",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{adminToken}}"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/media/api/recursos/animanga/1",
+							"host": ["{{baseUrl}}"],
+							"path": ["media", "api", "recursos", "animanga", "1"]
+						}
+					}
+				},
+				{
+					"name": "15. ✅ Crear Perfil Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{adminToken}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"biografia\": \"Administrador del sistema\", \"avatarUrl\": \"https://example.com/admin.png\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/perfil/api/perfiles",
+							"host": ["{{baseUrl}}"],
+							"path": ["perfil", "api", "perfiles"]
+						}
+					}
+				},
+				{
+					"name": "16. ❌ Duplicado Perfil (debe fallar 409)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{adminToken}}"},
+							{"key": "Content-Type", "value": "application/json"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"biografia\": \"Administrador del sistema\", \"avatarUrl\": \"https://example.com/admin.png\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/perfil/api/perfiles",
+							"host": ["{{baseUrl}}"],
+							"path": ["perfil", "api", "perfiles"]
+						}
+					}
+				},
+				{
+					"name": "17. ✅ Ver Auditoría (todo quedó registrado)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{adminToken}}"}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auditoria/api/auditoria",
+							"host": ["{{baseUrl}}"],
+							"path": ["auditoria", "api", "auditoria"]
 						}
 					}
 				}

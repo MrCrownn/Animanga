@@ -46,16 +46,29 @@ public class PerfilService {
         }
     }
 
-    public String guardar(Perfil perfil, Long idUsuarioAuth) {
-        perfil.setIdUsuario(idUsuarioAuth);
+    public String guardar(Perfil perfil, Long idUsuarioAuth, String rolAuth) {
+        if (idUsuarioAuth == null) return "X-User-Id es requerido";
 
-        String errorUsuario = validarUsuario(idUsuarioAuth);
+        Long targetUsuario = perfil.getIdUsuario();
+        if (targetUsuario == null) {
+            targetUsuario = idUsuarioAuth;
+        } else if (!targetUsuario.equals(idUsuarioAuth)) {
+            if (!"ADMIN".equalsIgnoreCase(rolAuth)) {
+                return "No puedes crear un perfil para otro usuario";
+            }
+        }
+
+        if (perfilRepository.findByIdUsuario(targetUsuario).isPresent()) {
+            return "Ya existe un perfil para el usuario " + targetUsuario;
+        }
+
+        String errorUsuario = validarUsuario(targetUsuario);
         if (errorUsuario != null) return errorUsuario;
 
+        perfil.setIdUsuario(targetUsuario);
         perfil.setFechaRegistro(LocalDateTime.now());
-
         perfilRepository.save(perfil);
-        auditar(idUsuarioAuth, "Perfil creado para usuario " + idUsuarioAuth, "perfil");
+        auditar(idUsuarioAuth, "Perfil creado para usuario " + targetUsuario, "perfil");
         return "Perfil guardado exitosamente";
     }
 

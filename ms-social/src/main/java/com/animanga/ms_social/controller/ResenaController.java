@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.animanga.ms_social.dto.ResenasPorAnimangaResponse;
 import com.animanga.ms_social.model.Resena;
 import com.animanga.ms_social.service.ResenaService;
 
@@ -70,8 +71,8 @@ public class ResenaController {
     }
 
     @GetMapping("/animanga/{idAnimanga}")
-    public List<Resena> obtenerPorAnimanga(@PathVariable Long idAnimanga) {
-        return resenaService.obtenerPorAnimanga(idAnimanga);
+    public ResenasPorAnimangaResponse obtenerPorAnimanga(@PathVariable Long idAnimanga) {
+        return resenaService.obtenerResenasConPromedio(idAnimanga);
     }
 
     @PutMapping("/{id}")

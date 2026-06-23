@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.animanga.ms_social.dto.AuditRequest;
+import com.animanga.ms_social.dto.ResenasPorAnimangaResponse;
 import com.animanga.ms_social.model.Resena;
 import com.animanga.ms_social.repository.ResenaRepository;
 
@@ -70,6 +71,11 @@ public class ResenaService {
 
     public List<Resena> obtenerPorAnimanga(Long idAnimanga) {
         return resenaRepository.findByIdAnimanga(idAnimanga);
+    }
+
+    public ResenasPorAnimangaResponse obtenerResenasConPromedio(Long idAnimanga) {
+        List<Resena> resenas = resenaRepository.findByIdAnimanga(idAnimanga);
+        return new ResenasPorAnimangaResponse(idAnimanga, resenas);
     }
 
     public String actualizar(Long id, Resena resenaActualizada, Long idUsuarioAuth) {

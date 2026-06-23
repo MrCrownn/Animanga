@@ -63,6 +63,16 @@ public class RecursoMultimediaController {
         return ResponseEntity.ok(recurso.get());
     }
 
+    @GetMapping("/animanga/{idAnimanga}")
+    public ResponseEntity<?> obtenerPorAnimanga(@PathVariable Long idAnimanga) {
+        List<RecursoMultimedia> recursos = recursoService.obtenerPorAnimanga(idAnimanga);
+        if (recursos.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("No se encontraron recursos para el animanga " + idAnimanga);
+        }
+        return ResponseEntity.ok(recursos);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody RecursoMultimedia recurso, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (recurso == null) {

@@ -5,6 +5,9 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestTemplate;
 
+import com.animanga.ms_social.dto.ResenasPorAnimangaResponse;
 import com.animanga.ms_social.model.Resena;
 import com.animanga.ms_social.repository.ResenaRepository;
 
@@ -120,5 +124,50 @@ class ResenaServiceTest {
         String resultado = service.actualizar(1L, actualizado, 1L);
 
         assertEquals("La puntuacion debe estar entre 0.0 y 10.0", resultado);
+    }
+
+    @Test
+    void obtenerResenasConPromedio_conResenas() {
+        Resena r1 = new Resena();
+        r1.setPuntuacion(new BigDecimal("8.0"));
+        Resena r2 = new Resena();
+        r2.setPuntuacion(new BigDecimal("6.0"));
+        Resena r3 = new Resena();
+        r3.setPuntuacion(new BigDecimal("10.0"));
+
+        List<Resena> resenas = Arrays.asList(r1, r2, r3);
+        when(resenaRepository.findByIdAnimanga(1L)).thenReturn(resenas);
+
+        ResenasPorAnimangaResponse response = service.obtenerResenasConPromedio(1L);
+
+        assertEquals(1L, response.getIdAnimanga());
+        assertEquals(3, response.getTotalResenas());
+        assertEquals(0, new BigDecimal("8.0").compareTo(response.getPromedio()));
+        assertEquals(3, response.getResenas().size());
+    }
+
+    @Test
+    void obtenerResenasConPromedio_sinResenas() {
+        when(resenaRepository.findByIdAnimanga(1L)).thenReturn(Collections.emptyList());
+
+        ResenasPorAnimangaResponse response = service.obtenerResenasConPromedio(1L);
+
+        assertEquals(1L, response.getIdAnimanga());
+        assertEquals(0, response.getTotalResenas());
+        assertEquals(0, BigDecimal.ZERO.compareTo(response.getPromedio()));
+        assertTrue(response.getResenas().isEmpty());
+    }
+
+    @Test
+    void obtenerResenasConPromedio_unaResena() {
+        Resena r1 = new Resena();
+        r1.setPuntuacion(new BigDecimal("7.5"));
+
+        when(resenaRepository.findByIdAnimanga(1L)).thenReturn(Collections.singletonList(r1));
+
+        ResenasPorAnimangaResponse response = service.obtenerResenasConPromedio(1L);
+
+        assertEquals(1, response.getTotalResenas());
+        assertEquals(0, new BigDecimal("7.5").compareTo(response.getPromedio()));
     }
 }

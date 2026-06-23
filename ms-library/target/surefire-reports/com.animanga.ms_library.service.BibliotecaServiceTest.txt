@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.animanga.ms_library.service.BibliotecaServiceTest
 -------------------------------------------------------------------------------
-Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.282 s -- in com.animanga.ms_library.service.BibliotecaServiceTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.845 s -- in com.animanga.ms_library.service.BibliotecaServiceTest

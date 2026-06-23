@@ -6,7 +6,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -104,5 +107,15 @@ public class BibliotecaController {
         }
         List<ProgresoAnime> progreso = service.obtenerProgresoPorBiblioteca(idBiblioteca);
         return ResponseEntity.ok(progreso);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<String> manejarErrorLectura(HttpMessageNotReadableException ex) {
+        return ResponseEntity.badRequest().body("Estado de seguimiento invalido. Valores permitidos: FAVORITO, LEYENDO, COMPLETADO, RETRASADO, PLAN_A_VER");
+    }
+
+    @ExceptionHandler(TypeMismatchException.class)
+    public ResponseEntity<String> manejarErrorTipoArgumento(TypeMismatchException ex) {
+        return ResponseEntity.badRequest().body("Estado de seguimiento invalido. Valores permitidos: FAVORITO, LEYENDO, COMPLETADO, RETRASADO, PLAN_A_VER");
     }
 }

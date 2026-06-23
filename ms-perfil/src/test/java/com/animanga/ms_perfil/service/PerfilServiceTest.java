@@ -44,11 +44,12 @@ class PerfilServiceTest {
 
     @Test
     void guardar_exito() {
+        when(perfilRepository.findByIdUsuario(anyLong())).thenReturn(Optional.empty());
         when(restTemplate.getForEntity(anyString(), eq(Object.class)))
                 .thenReturn(new ResponseEntity<>(HttpStatus.OK));
         when(perfilRepository.save(any(Perfil.class))).thenReturn(perfil);
 
-        String resultado = service.guardar(perfil, 1L);
+        String resultado = service.guardar(perfil, 1L, "ADMIN");
 
         assertEquals("Perfil guardado exitosamente", resultado);
         assertEquals(1L, perfil.getIdUsuario());
@@ -57,10 +58,11 @@ class PerfilServiceTest {
 
     @Test
     void guardar_usuarioNoExiste() {
+        when(perfilRepository.findByIdUsuario(anyLong())).thenReturn(Optional.empty());
         when(restTemplate.getForEntity(anyString(), eq(Object.class)))
                 .thenReturn(new ResponseEntity<>(HttpStatus.NOT_FOUND));
 
-        String resultado = service.guardar(perfil, 1L);
+        String resultado = service.guardar(perfil, 1L, "ADMIN");
 
         assertEquals("El usuario con id 1 no existe", resultado);
         verify(perfilRepository, never()).save(any());
@@ -68,13 +70,59 @@ class PerfilServiceTest {
 
     @Test
     void guardar_errorConexion() {
+        when(perfilRepository.findByIdUsuario(anyLong())).thenReturn(Optional.empty());
         when(restTemplate.getForEntity(anyString(), eq(Object.class)))
                 .thenThrow(new RuntimeException("Connection refused"));
 
-        String resultado = service.guardar(perfil, 1L);
+        String resultado = service.guardar(perfil, 1L, "ADMIN");
 
         assertTrue(resultado.contains("Error al validar usuario"));
         verify(perfilRepository, never()).save(any());
+    }
+
+    @Test
+    void guardar_sinXUserId() {
+        String resultado = service.guardar(perfil, null, "ADMIN");
+
+        assertEquals("X-User-Id es requerido", resultado);
+        verify(perfilRepository, never()).save(any());
+    }
+
+    @Test
+    void guardar_otroUsuarioNoAdmin() {
+        perfil.setIdUsuario(2L);
+
+        String resultado = service.guardar(perfil, 1L, "USUARIO");
+
+        assertEquals("No puedes crear un perfil para otro usuario", resultado);
+        verify(perfilRepository, never()).save(any());
+    }
+
+    @Test
+    void guardar_yaExiste() {
+        when(perfilRepository.findByIdUsuario(1L)).thenReturn(Optional.of(perfil));
+
+        String resultado = service.guardar(new Perfil(), 1L, "ADMIN");
+
+        assertEquals("Ya existe un perfil para el usuario 1", resultado);
+        verify(perfilRepository, never()).save(any());
+    }
+
+    @Test
+    void guardar_adminCreaParaOtro() {
+        Perfil nuevo = new Perfil();
+        nuevo.setIdUsuario(2L);
+
+        when(perfilRepository.findByIdUsuario(2L)).thenReturn(Optional.empty());
+        when(restTemplate.getForEntity(anyString(), eq(Object.class)))
+                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        when(perfilRepository.save(any(Perfil.class))).thenReturn(nuevo);
+
+        String resultado = service.guardar(nuevo, 1L, "ADMIN");
+
+        assertEquals("Perfil guardado exitosamente", resultado);
+        assertEquals(2L, nuevo.getIdUsuario());
+        verify(perfilRepository).save(nuevo);
     }
 
     @Test
