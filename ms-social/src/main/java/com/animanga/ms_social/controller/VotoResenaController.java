@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,7 +27,7 @@ public class VotoResenaController {
     private VotoResenaService votoService;
 
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody VotoResena voto) {
+    public ResponseEntity<?> crear(@RequestBody VotoResena voto, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (voto.getResena() == null || voto.getResena().getIdResena() == null) {
             return ResponseEntity.badRequest().body("La resena es obligatoria");
         }
@@ -36,7 +38,7 @@ public class VotoResenaController {
             return ResponseEntity.badRequest().body("El marcador de utilidad es obligatorio");
         }
 
-        String respuesta = votoService.guardar(voto);
+        String respuesta = votoService.guardar(voto, userId);
         if (respuesta.equals("Voto guardado exitosamente")) {
             return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
         }
@@ -69,8 +71,8 @@ public class VotoResenaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id) {
-        boolean eliminado = votoService.eliminar(id);
+    public ResponseEntity<?> eliminar(@PathVariable Long id, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
+        boolean eliminado = votoService.eliminar(id, userId);
         if (eliminado) {
             return ResponseEntity.ok("Voto eliminado exitosamente");
         }

@@ -16,8 +16,11 @@ public class Permiso {
 
     
     public Permiso() {
-        this.accion="";
-        this.descripcion="";
+    }
+
+    public Permiso(String accion, String descripcion) {
+        this.accion = accion;
+        this.descripcion = descripcion;
     }
     public Integer getId() {
         return id;

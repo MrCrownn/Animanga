@@ -1,5 +1,6 @@
 package com.animanga.ms_social.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,7 +29,7 @@ public class ResenaController {
     private ResenaService resenaService;
 
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody Resena resena) {
+    public ResponseEntity<?> crear(@RequestBody Resena resena, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (resena.getIdUsuario() == null) {
             return ResponseEntity.badRequest().body("El ID del usuario es obligatorio");
         }
@@ -36,11 +39,11 @@ public class ResenaController {
         if (resena.getTitulo() == null || resena.getTitulo().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("El titulo de la resena es obligatorio");
         }
-        if (resena.getPuntuacion() == null || resena.getPuntuacion() < 0.0 || resena.getPuntuacion() > 10.0) {
+        if (resena.getPuntuacion() == null || resena.getPuntuacion().compareTo(BigDecimal.ZERO) < 0 || resena.getPuntuacion().compareTo(new BigDecimal("10.0")) > 0) {
             return ResponseEntity.badRequest().body("La puntuacion debe estar entre 0.0 y 10.0");
         }
 
-        String respuesta = resenaService.guardar(resena);
+        String respuesta = resenaService.guardar(resena, userId);
         if (respuesta.equals("Resena guardada exitosamente")) {
             return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
         }
@@ -72,12 +75,12 @@ public class ResenaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody Resena resena) {
+    public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody Resena resena, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (resena == null) {
             return ResponseEntity.badRequest().body("El cuerpo de la peticion es obligatorio");
         }
 
-        String resultado = resenaService.actualizar(id, resena);
+        String resultado = resenaService.actualizar(id, resena, userId);
         if (resultado.equals("Resena no encontrada")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resultado);
         }
@@ -88,8 +91,8 @@ public class ResenaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id) {
-        boolean eliminado = resenaService.eliminar(id);
+    public ResponseEntity<?> eliminar(@PathVariable Long id, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
+        boolean eliminado = resenaService.eliminar(id, userId);
         if (eliminado) {
             return ResponseEntity.ok("Resena eliminada exitosamente");
         }

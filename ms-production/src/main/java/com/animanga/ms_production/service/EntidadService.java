@@ -30,17 +30,17 @@ public class EntidadService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private void auditar(String accion, String tabla) {
+    private void auditar(String accion, String tabla, Long idUsuarioAuth) {
         try {
             String url = "http://ms-auditoria/api/auditoria";
-            AuditRequest request = new AuditRequest(null, accion, tabla);
+            AuditRequest request = new AuditRequest(idUsuarioAuth, accion, tabla);
             restTemplate.postForEntity(url, request, String.class);
         } catch (Exception e) {
             System.err.println("Error al auditar: " + e.getMessage());
         }
     }
 
-    public String guardar(Entidad entidad) {
+    public String guardar(Entidad entidad, Long idUsuarioAuth) {
         if (entidad.getNombre() == null || entidad.getNombre().trim().isEmpty()) {
             return "El nombre de la entidad es obligatorio";
         }
@@ -68,7 +68,7 @@ public class EntidadService {
         }
 
         entidadRepository.save(entidad);
-        auditar("Entidad '" + entidad.getNombre() + "' creada", "entidad");
+        auditar("Entidad '" + entidad.getNombre() + "' creada", "entidad", idUsuarioAuth);
         return "Entidad guardada exitosamente";
     }
 
@@ -84,7 +84,7 @@ public class EntidadService {
         return entidadRepository.findByTipoEntidad_Nombre(nombreTipo);
     }
 
-    public String actualizar(Integer id, Entidad entidadActualizada) {
+    public String actualizar(Integer id, Entidad entidadActualizada, Long idUsuarioAuth) {
         Entidad entidadExistente = entidadRepository.findById(id).orElse(null);
         if (entidadExistente == null) {
             return "Entidad no encontrada";
@@ -120,7 +120,7 @@ public class EntidadService {
         }
 
         entidadRepository.save(entidadExistente);
-        auditar("Entidad '" + entidadExistente.getNombre() + "' actualizada", "entidad");
+        auditar("Entidad '" + entidadExistente.getNombre() + "' actualizada", "entidad", idUsuarioAuth);
         return "Entidad actualizada exitosamente";
     }
 
@@ -132,13 +132,13 @@ public class EntidadService {
         return entidadRepository.findByNacionalidad_Pais(pais);
     }
 
-    public boolean eliminar(Integer id) {
+    public boolean eliminar(Integer id, Long idUsuarioAuth) {
         Entidad entidad = entidadRepository.findById(id).orElse(null);
         if (entidad == null) {
             return false;
         }
         entidadRepository.delete(entidad);
-        auditar("Entidad '" + entidad.getNombre() + "' eliminada", "entidad");
+        auditar("Entidad '" + entidad.getNombre() + "' eliminada", "entidad", idUsuarioAuth);
         return true;
     }
 }

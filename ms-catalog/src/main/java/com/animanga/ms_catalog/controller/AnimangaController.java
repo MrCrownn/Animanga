@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,9 +28,9 @@ public class AnimangaController {
     
     @Autowired
     private AnimangaService animangaService;
-    
+
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody Animanga animanga) {
+    public ResponseEntity<?> crear(@RequestBody Animanga animanga, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (animanga == null || animanga.getTitulo() == null || animanga.getTitulo().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("El título del Animanga es obligatorio");
         }
@@ -42,7 +44,7 @@ public class AnimangaController {
             return ResponseEntity.badRequest().body("El estado de emisión es obligatorio (EN_CURSO, FINALIZADO, PROXIMAMENTE, EN_PAUSA, DISCONTINUADO, NO_ESPECIFICADO)");
         }
         
-        String respuesta = animangaService.guardar(animanga);
+        String respuesta = animangaService.guardar(animanga, userId);
         
         if (respuesta.equals("Animanga guardado exitosamente")) {
             return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
@@ -81,12 +83,12 @@ public class AnimangaController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody Animanga animanga) {
+    public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody Animanga animanga, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (animanga == null) {
             return ResponseEntity.badRequest().body("El cuerpo de la petición es obligatorio");
         }
         
-        String resultado = animangaService.actualizar(id, animanga);
+        String resultado = animangaService.actualizar(id, animanga, userId);
         
         if (resultado.equals("Animanga no encontrado")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resultado);
@@ -98,8 +100,8 @@ public class AnimangaController {
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id) {
-        boolean eliminado = animangaService.eliminar(id);
+    public ResponseEntity<?> eliminar(@PathVariable Long id, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
+        boolean eliminado = animangaService.eliminar(id, userId);
         if (eliminado) {
             return ResponseEntity.ok("Animanga eliminado exitosamente");
         } else {

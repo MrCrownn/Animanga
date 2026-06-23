@@ -20,17 +20,17 @@ public class TipoAnimangaService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private void auditar(String accion, String tabla) {
+    private void auditar(String accion, String tabla, Long idUsuarioAuth) {
         try {
             String url = "http://ms-auditoria/api/auditoria";
-            AuditRequest request = new AuditRequest(null, accion, tabla);
+            AuditRequest request = new AuditRequest(idUsuarioAuth, accion, tabla);
             restTemplate.postForEntity(url, request, String.class);
         } catch (Exception e) {
             System.err.println("Error al auditar: " + e.getMessage());
         }
     }
 
-    public String guardar(TipoAnimanga tipo) {
+    public String guardar(TipoAnimanga tipo, Long idUsuarioAuth) {
         if (tipo.getNombre() == null || tipo.getNombre().trim().isEmpty()) {
             return "El nombre del TipoAnimanga es obligatorio";
         }
@@ -40,7 +40,7 @@ public class TipoAnimangaService {
         }
         
         tipoAnimangaRepository.save(tipo);
-        auditar("TipoAnimanga '" + tipo.getNombre() + "' creado", "tipo_animanga");
+        auditar("TipoAnimanga '" + tipo.getNombre() + "' creado", "tipo_animanga", idUsuarioAuth);
         return "TipoAnimanga guardado exitosamente";
     }
 
@@ -52,7 +52,7 @@ public class TipoAnimangaService {
         return tipoAnimangaRepository.findById(id);
     }
 
-    public String actualizar(Integer id, TipoAnimanga tipoActualizado) {
+    public String actualizar(Integer id, TipoAnimanga tipoActualizado, Long idUsuarioAuth) {
         TipoAnimanga tipoExistente = tipoAnimangaRepository.findById(id).orElse(null);
         if (tipoExistente == null) {
             return "TipoAnimanga no encontrado";
@@ -67,15 +67,15 @@ public class TipoAnimangaService {
         }
         
         tipoAnimangaRepository.save(tipoExistente);
-        auditar("TipoAnimanga '" + tipoExistente.getNombre() + "' actualizado", "tipo_animanga");
+        auditar("TipoAnimanga '" + tipoExistente.getNombre() + "' actualizado", "tipo_animanga", idUsuarioAuth);
         return "TipoAnimanga actualizado exitosamente";
     }
 
-    public boolean eliminar(Integer id) {
+    public boolean eliminar(Integer id, Long idUsuarioAuth) {
         if (tipoAnimangaRepository.existsById(id)) {
             String nombre = tipoAnimangaRepository.findById(id).get().getNombre();
             tipoAnimangaRepository.deleteById(id);
-            auditar("TipoAnimanga '" + nombre + "' eliminado", "tipo_animanga");
+            auditar("TipoAnimanga '" + nombre + "' eliminado", "tipo_animanga", idUsuarioAuth);
             return true;
         }
         return false;

@@ -5,7 +5,9 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import com.animanga.ms_catalog.dto.AuditRequest;
 import com.animanga.ms_catalog.model.Genero;
 import com.animanga.ms_catalog.repository.GeneroRepository;
 
@@ -15,7 +17,20 @@ public class GeneroService {
     @Autowired
     private GeneroRepository generoRepository;
 
-    public String guardar(Genero genero) {
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private void auditar(String accion, String tabla, Long idUsuarioAuth) {
+        try {
+            String url = "http://ms-auditoria/api/auditoria";
+            AuditRequest request = new AuditRequest(idUsuarioAuth, accion, tabla);
+            restTemplate.postForEntity(url, request, String.class);
+        } catch (Exception e) {
+            System.err.println("Error al auditar: " + e.getMessage());
+        }
+    }
+
+    public String guardar(Genero genero, Long idUsuarioAuth) {
         if (genero.getNombre() == null || genero.getNombre().trim().isEmpty()) {
             return "El nombre del genero es obligatorio";
         }
@@ -25,6 +40,7 @@ public class GeneroService {
         }
 
         generoRepository.save(genero);
+        auditar("Genero '" + genero.getNombre() + "' creado", "genero", idUsuarioAuth);
         return "Genero guardado exitosamente";
     }
 
@@ -36,7 +52,7 @@ public class GeneroService {
         return generoRepository.findById(id);
     }
 
-    public String actualizar(Integer id, Genero generoActualizado) {
+    public String actualizar(Integer id, Genero generoActualizado, Long idUsuarioAuth) {
         Genero generoExistente = generoRepository.findById(id).orElse(null);
         if (generoExistente == null) {
             return "Genero no encontrado";
@@ -51,15 +67,17 @@ public class GeneroService {
         }
 
         generoRepository.save(generoExistente);
+        auditar("Genero '" + generoExistente.getNombre() + "' actualizado", "genero", idUsuarioAuth);
         return "Genero actualizado exitosamente";
     }
 
-    public boolean eliminar(Integer id) {
+    public boolean eliminar(Integer id, Long idUsuarioAuth) {
         Genero genero = generoRepository.findById(id).orElse(null);
         if (genero == null) {
             return false;
         }
         generoRepository.delete(genero);
+        auditar("Genero '" + genero.getNombre() + "' eliminado", "genero", idUsuarioAuth);
         return true;
     }
 }

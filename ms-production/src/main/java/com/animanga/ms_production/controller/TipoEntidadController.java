@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,12 +28,12 @@ public class TipoEntidadController {
     private TipoEntidadService tipoEntidadService;
 
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody TipoEntidad tipoEntidad) {
+    public ResponseEntity<?> crear(@RequestBody TipoEntidad tipoEntidad, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (tipoEntidad == null || tipoEntidad.getNombre() == null || tipoEntidad.getNombre().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("El nombre del tipo de entidad es obligatorio");
         }
 
-        String respuesta = tipoEntidadService.guardar(tipoEntidad);
+        String respuesta = tipoEntidadService.guardar(tipoEntidad, userId);
 
         if (respuesta.equals("Tipo de entidad guardado exitosamente")) {
             return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
@@ -55,12 +57,12 @@ public class TipoEntidadController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody TipoEntidad tipoEntidad) {
+    public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody TipoEntidad tipoEntidad, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (tipoEntidad == null || tipoEntidad.getNombre() == null || tipoEntidad.getNombre().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("El nombre del tipo de entidad es obligatorio");
         }
 
-        String resultado = tipoEntidadService.actualizar(id, tipoEntidad);
+        String resultado = tipoEntidadService.actualizar(id, tipoEntidad, userId);
 
         if (resultado.equals("Tipo de entidad no encontrado")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resultado);
@@ -72,8 +74,8 @@ public class TipoEntidadController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Integer id) {
-        boolean eliminado = tipoEntidadService.eliminar(id);
+    public ResponseEntity<?> eliminar(@PathVariable Integer id, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
+        boolean eliminado = tipoEntidadService.eliminar(id, userId);
         if (eliminado) {
             return ResponseEntity.ok("Tipo de entidad eliminado exitosamente");
         } else {

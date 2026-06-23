@@ -12,8 +12,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.animanga.ms_media.model.RecursoMultimedia;
@@ -27,7 +28,7 @@ public class RecursoMultimediaController {
     private RecursoMultimediaService recursoService;
 
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody RecursoMultimedia recurso) {
+    public ResponseEntity<?> crear(@RequestBody RecursoMultimedia recurso, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (recurso.getIdAnimanga() == null) {
             return ResponseEntity.badRequest().body("El ID del animanga es obligatorio");
         }
@@ -38,22 +39,18 @@ public class RecursoMultimediaController {
             return ResponseEntity.badRequest().body("La URL del recurso es obligatoria");
         }
 
-        String respuesta = recursoService.guardar(recurso);
+        String respuesta = recursoService.guardar(recurso, userId);
         if (respuesta.equals("Recurso multimedia guardado exitosamente")) {
             return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
+        }
+        if (respuesta.contains("no existe")) {
+            return ResponseEntity.badRequest().body(respuesta);
         }
         return ResponseEntity.status(HttpStatus.CONFLICT).body(respuesta);
     }
 
     @GetMapping
-    public List<RecursoMultimedia> obtenerTodos(@RequestParam(required = false) Long idAnimanga,
-                                                @RequestParam(required = false) String tipo) {
-        if (idAnimanga != null && tipo != null) {
-            return recursoService.obtenerPorAnimangaYTipo(idAnimanga, tipo);
-        }
-        if (idAnimanga != null) {
-            return recursoService.obtenerPorAnimanga(idAnimanga);
-        }
+    public List<RecursoMultimedia> obtenerTodos() {
         return recursoService.obtenerTodos();
     }
 
@@ -67,21 +64,24 @@ public class RecursoMultimediaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody RecursoMultimedia recurso) {
+    public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody RecursoMultimedia recurso, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (recurso == null) {
             return ResponseEntity.badRequest().body("El cuerpo de la peticion es obligatorio");
         }
 
-        String resultado = recursoService.actualizar(id, recurso);
+        String resultado = recursoService.actualizar(id, recurso, userId);
         if (resultado.equals("Recurso no encontrado")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resultado);
+        }
+        if (resultado.contains("no existe")) {
+            return ResponseEntity.badRequest().body(resultado);
         }
         return ResponseEntity.ok(resultado);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id) {
-        boolean eliminado = recursoService.eliminar(id);
+    public ResponseEntity<?> eliminar(@PathVariable Long id, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
+        boolean eliminado = recursoService.eliminar(id, userId);
         if (eliminado) {
             return ResponseEntity.ok("Recurso eliminado exitosamente");
         }

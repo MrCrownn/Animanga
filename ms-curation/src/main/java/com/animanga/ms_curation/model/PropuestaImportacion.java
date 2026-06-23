@@ -2,6 +2,8 @@ package com.animanga.ms_curation.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,8 +23,9 @@ public class PropuestaImportacion {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String datosJson;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String estadoCuracion = "PENDIENTE";
+    private EstadoCuracion estadoCuracion = EstadoCuracion.PENDIENTE;
 
     @Column(columnDefinition = "TEXT")
     private String comentarioRechazo;
@@ -55,11 +58,11 @@ public class PropuestaImportacion {
         this.datosJson = datosJson;
     }
 
-    public String getEstadoCuracion() {
+    public EstadoCuracion getEstadoCuracion() {
         return estadoCuracion;
     }
 
-    public void setEstadoCuracion(String estadoCuracion) {
+    public void setEstadoCuracion(EstadoCuracion estadoCuracion) {
         this.estadoCuracion = estadoCuracion;
     }
 

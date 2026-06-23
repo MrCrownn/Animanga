@@ -1,276 +1,2209 @@
 {
 	"info": {
 		"name": "Animanga Microservices",
-		"description": "Colección para presentación - Proyecto Animanga",
+		"description": "Colección completa para presentación - Proyecto Animanga\n\n## Variables de Entorno\n- `adminToken`: Token JWT del usuario administrador\n- `userToken`: Token JWT del usuario regular\n- `baseUrl`: http://localhost:8080 (Gateway)\n\n## Flujo de Demo\n1. Registrar usuarios y login (guardar tokens)\n2. Probar endpoints como admin (✅) y user (👤)\n3. Verificar que user NO puede aprobar (❌ Forbidden)\n4. Gateway routing con autenticación\n5. Flujo de aprobación de propuestas",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
+	"variable": [
+		{
+			"key": "adminToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	],
 	"item": [
 		{
-			"name": "1. Production",
+			"name": "0. Setup Inicial (Auth)",
 			"item": [
 				{
-					"name": "Crear Nacionalidad",
+					"name": "Listar Roles (con permisos)",
 					"request": {
-						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"pais\": \"Japón\"}"},
-						"url": {"raw": "http://localhost:8082/api/nacionalidades", "host": ["localhost"], "port": "8082", "path": ["api", "nacionalidades"]}
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/auth/api/roles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"api",
+								"roles"
+							]
+						}
 					}
 				},
 				{
-					"name": "Crear Tipo Entidad (ESTUDIO)",
+					"name": "Listar Permisos",
 					"request": {
-						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"nombre\": \"ESTUDIO\"}"},
-						"url": {"raw": "http://localhost:8082/api/tipos-entidad", "host": ["localhost"], "port": "8082", "path": ["api", "tipos-entidad"]}
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/auth/api/permisos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"api",
+								"permisos"
+							]
+						}
 					}
 				},
 				{
-					"name": "Crear Tipo Entidad (AUTOR)",
+					"name": "Registrar Admin",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"nombre\": \"AUTOR\"}"},
-						"url": {"raw": "http://localhost:8082/api/tipos-entidad", "host": ["localhost"], "port": "8082", "path": ["api", "tipos-entidad"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"admin\", \"email\": \"admin@animanga.cl\", \"password_hash\": \"admin123\", \"rol\": {\"id\": 1}}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/api/usuarios/registro",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"api",
+								"usuarios",
+								"registro"
+							]
+						}
+					}
+				},
+				{
+					"name": "Registrar User Regular",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"user\", \"email\": \"user@animanga.cl\", \"password_hash\": \"user123\", \"rol\": {\"id\": 3}}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/api/usuarios/registro",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"api",
+								"usuarios",
+								"registro"
+							]
+						}
+					}
+				},
+				{
+					"name": "✅ Login Admin (guardar token)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"admin\", \"password_hash\": \"admin123\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/api/usuarios/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"api",
+								"usuarios",
+								"login"
+							]
+						},
+						"event": [
+							{
+								"listen": "test",
+								"script": {
+									"exec": [
+										"var jsonData = pm.response.json();",
+										"pm.collectionVariables.set('adminToken', jsonData.token);"
+									]
+								}
+							}
+						]
+					}
+				},
+				{
+					"name": "✅ Login User (guardar token)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"user\", \"password_hash\": \"user123\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/api/usuarios/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"api",
+								"usuarios",
+								"login"
+							]
+						},
+						"event": [
+							{
+								"listen": "test",
+								"script": {
+									"exec": [
+										"var jsonData = pm.response.json();",
+										"pm.collectionVariables.set('userToken', jsonData.token);"
+									]
+								}
+							}
+						]
+					}
+				},
+				{
+					"name": "❌ Login fallido (contraseña incorrecta)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"admin\", \"password_hash\": \"wrongpass\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/api/usuarios/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"api",
+								"usuarios",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "👤 Listar Usuarios (solo admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/api/usuarios",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"api",
+								"usuarios"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "1. Production (ms-production)",
+			"item": [
+				{
+					"name": "👤 Crear Nacionalidad (Japón)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"pais\": \"Japón\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/nacionalidades",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"nacionalidades"
+							]
+						}
+					}
+				},
+				{
+					"name": "👤 Crear Nacionalidad (USA)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"pais\": \"Estados Unidos\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/nacionalidades",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"nacionalidades"
+							]
+						}
+					}
+				},
+				{
+					"name": "👤 Crear Tipo Entidad (ESTUDIO)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"ESTUDIO\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/tipos-entidad",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"tipos-entidad"
+							]
+						}
+					}
+				},
+				{
+					"name": "👤 Crear Tipo Entidad (AUTOR)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"AUTOR\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/tipos-entidad",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"tipos-entidad"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Nacionalidades",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/nacionalidades",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"nacionalidades"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Tipos Entidad",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/tipos-entidad",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"tipos-entidad"
+							]
+						}
 					}
 				},
 				{
 					"name": "❌ Crear Entidad (tipo inválido)",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"nombre\": \"Test\", \"tipoEntidad\": {\"idTipo\": 999}, \"nacionalidad\": {\"idNacionalidad\": 1}}"},
-						"url": {"raw": "http://localhost:8082/api/entidades", "host": ["localhost"], "port": "8082", "path": ["api", "entidades"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Test\", \"tipoEntidad\": {\"idTipo\": 999}, \"nacionalidad\": {\"idNacionalidad\": 1}}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/entidades",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"entidades"
+							]
+						}
 					}
 				},
 				{
 					"name": "✅ Crear Studio Ghibli (estudio)",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"nombre\": \"Studio Ghibli\", \"tipoEntidad\": {\"idTipo\": 1}, \"nacionalidad\": {\"idNacionalidad\": 1}}"},
-						"url": {"raw": "http://localhost:8082/api/entidades", "host": ["localhost"], "port": "8082", "path": ["api", "entidades"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Studio Ghibli\", \"tipoEntidad\": {\"idTipo\": 1}, \"nacionalidad\": {\"idNacionalidad\": 1}}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/entidades",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"entidades"
+							]
+						}
 					}
 				},
 				{
 					"name": "✅ Crear Hayao Miyazaki (autor)",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"nombre\": \"Hayao Miyazaki\", \"tipoEntidad\": {\"idTipo\": 2}, \"nacionalidad\": {\"idNacionalidad\": 1}, \"fechaNacimiento\": \"1941-01-05\"}"},
-						"url": {"raw": "http://localhost:8082/api/entidades", "host": ["localhost"], "port": "8082", "path": ["api", "entidades"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Hayao Miyazaki\", \"tipoEntidad\": {\"idTipo\": 2}, \"nacionalidad\": {\"idNacionalidad\": 1}, \"fechaNacimiento\": \"1941-01-05\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/entidades",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"entidades"
+							]
+						}
+					}
+				},
+				{
+					"name": "✅ Crear Madhouse (estudio)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Madhouse\", \"tipoEntidad\": {\"idTipo\": 1}, \"nacionalidad\": {\"idNacionalidad\": 1}}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/entidades",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"entidades"
+							]
+						}
+					}
+				},
+				{
+					"name": "✅ Crear Kentaro Miura (autor)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Kentaro Miura\", \"tipoEntidad\": {\"idTipo\": 2}, \"nacionalidad\": {\"idNacionalidad\": 1}, \"fechaNacimiento\": \"1966-07-11\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/entidades",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"entidades"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Entidades",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/entidades",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"entidades"
+							]
+						}
+					}
+				},
+				{
+					"name": "Buscar Entidad por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/entidades/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"entidades",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar Entidad",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Studio Ghibli Inc.\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/entidades/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"entidades",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "❌ User intenta crear entidad (debe fallar 403)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Test user\", \"tipoEntidad\": {\"idTipo\": 1}, \"nacionalidad\": {\"idNacionalidad\": 1}}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/produccion/api/entidades",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"produccion",
+								"api",
+								"entidades"
+							]
+						}
 					}
 				}
 			]
 		},
 		{
-			"name": "2. Catalog",
+			"name": "2. Catalog (ms-catalog)",
 			"item": [
 				{
-					"name": "Crear Tipo Animanga",
+					"name": "👤 Crear Tipo Animanga (Anime)",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"nombre\": \"Anime\"}"},
-						"url": {"raw": "http://localhost:8081/api/tipos", "host": ["localhost"], "port": "8081", "path": ["api", "tipos"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Anime\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/tipos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"tipos"
+							]
+						}
 					}
 				},
 				{
-					"name": "Crear Género (Shonen)",
+					"name": "👤 Crear Tipo Animanga (Manga)",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"nombre\": \"Shonen\"}"},
-						"url": {"raw": "http://localhost:8081/api/generos", "host": ["localhost"], "port": "8081", "path": ["api", "generos"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Manga\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/tipos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"tipos"
+							]
+						}
 					}
 				},
 				{
-					"name": "Crear Género (Fantasía)",
+					"name": "👤 Crear Género (Shonen)",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"nombre\": \"Fantasía\"}"},
-						"url": {"raw": "http://localhost:8081/api/generos", "host": ["localhost"], "port": "8081", "path": ["api", "generos"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Shonen\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/generos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"generos"
+							]
+						}
+					}
+				},
+				{
+					"name": "👤 Crear Género (Fantasía)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Fantasía\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/generos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"generos"
+							]
+						}
+					}
+				},
+				{
+					"name": "👤 Crear Género (Seinen)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Seinen\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/generos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"generos"
+							]
+						}
+					}
+				},
+				{
+					"name": "👤 Crear Género (Aventura)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"nombre\": \"Aventura\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/generos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"generos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Tipos Animanga",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/tipos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"tipos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Géneros",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/generos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"generos"
+							]
+						}
 					}
 				},
 				{
 					"name": "❌ Crear Animanga (tipo inválido)",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"titulo\": \"Test\", \"fechaEstreno\": \"2024-01-01\", \"tipoAnimanga\": {\"idTipo\": 999}, \"estadoEmision\": \"EN_CURSO\"}"},
-						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"titulo\": \"Test\", \"fechaEstreno\": \"2024-01-01\", \"tipoAnimanga\": {\"idTipo\": 999}, \"estadoEmision\": \"EN_CURSO\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/animanga",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"animanga"
+							]
+						}
 					}
 				},
 				{
 					"name": "❌ Crear Animanga (estudio inválido)",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"titulo\": \"Test\", \"fechaEstreno\": \"2024-01-01\", \"tipoAnimanga\": {\"idTipo\": 1}, \"idEstudio\": 999, \"estadoEmision\": \"EN_CURSO\"}"},
-						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"titulo\": \"Test\", \"fechaEstreno\": \"2024-01-01\", \"tipoAnimanga\": {\"idTipo\": 1}, \"idEstudio\": 999, \"estadoEmision\": \"EN_CURSO\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/animanga",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"animanga"
+							]
+						}
 					}
 				},
 				{
 					"name": "✅ Crear Mi Vecino Totoro (completo)",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"titulo\": \"Mi Vecino Totoro\", \"descripcion\": \"Dos niñas se mudan al campo y conocen a un espíritu del bosque\", \"fechaEstreno\": \"1988-04-16\", \"tipoAnimanga\": {\"idTipo\": 1}, \"idEstudio\": 1, \"idAutor\": 2, \"estadoEmision\": \"EN_CURSO\", \"generos\": [{\"idGenero\": 1}, {\"idGenero\": 2}]}"},
-						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"titulo\": \"Mi Vecino Totoro\", \"descripcion\": \"Dos niñas se mudan al campo y conocen a un espíritu del bosque\", \"fechaEstreno\": \"1988-04-16\", \"tipoAnimanga\": {\"idTipo\": 1}, \"idEstudio\": 1, \"idAutor\": 2, \"estadoEmision\": \"EN_CURSO\", \"generos\": [{\"idGenero\": 1}, {\"idGenero\": 2}]}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/animanga",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"animanga"
+							]
+						}
 					}
 				},
 				{
-					"name": "✅ Crear Manga en pausa",
+					"name": "✅ Crear Berserk (manga)",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"titulo\": \"Berserk\", \"descripcion\": \"Manga de fantasía oscura\", \"fechaEstreno\": \"1989-08-25\", \"tipoAnimanga\": {\"idTipo\": 2}, \"idAutor\": 2, \"estadoEmision\": \"EN_PAUSA\", \"generos\": [{\"idGenero\": 1}]}"},
-						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"titulo\": \"Berserk\", \"descripcion\": \"Manga de fantasía oscura\", \"fechaEstreno\": \"1989-08-25\", \"tipoAnimanga\": {\"idTipo\": 2}, \"idAutor\": 4, \"estadoEmision\": \"EN_PAUSA\", \"generos\": [{\"idGenero\": 3}, {\"idGenero\": 4}]}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/animanga",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"animanga"
+							]
+						}
 					}
 				},
 				{
 					"name": "✅ Crear Anime próximo a estrenar",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"titulo\": \"Nuevo Anime\", \"fechaEstreno\": \"2026-10-01\", \"tipoAnimanga\": {\"idTipo\": 1}, \"estadoEmision\": \"PROXIMAMENTE\"}"},
-						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"titulo\": \"Nuevo Anime\", \"fechaEstreno\": \"2026-10-01\", \"tipoAnimanga\": {\"idTipo\": 1}, \"estadoEmision\": \"PROXIMAMENTE\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/animanga",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"animanga"
+							]
+						}
 					}
 				},
 				{
 					"name": "❌ Crear Anime con EN_PAUSA (debe fallar)",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"titulo\": \"AnimeInvalido\", \"fechaEstreno\": \"2026-01-01\", \"tipoAnimanga\": {\"idTipo\": 1}, \"estadoEmision\": \"EN_PAUSA\"}"},
-						"url": {"raw": "http://localhost:8081/api/animanga", "host": ["localhost"], "port": "8081", "path": ["api", "animanga"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"titulo\": \"AnimeInvalido\", \"fechaEstreno\": \"2026-01-01\", \"tipoAnimanga\": {\"idTipo\": 1}, \"estadoEmision\": \"EN_PAUSA\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/animanga",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"animanga"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Animanga",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/animanga",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"animanga"
+							]
+						}
 					}
 				},
 				{
 					"name": "Listar Resumen Animanga",
 					"request": {
 						"method": "GET",
-						"url": {"raw": "http://localhost:8081/api/animanga/resumen", "host": ["localhost"], "port": "8081", "path": ["api", "animanga", "resumen"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/animanga/resumen",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"animanga",
+								"resumen"
+							]
+						}
 					}
 				},
 				{
-					"name": "Actualizar Animanga (PUT)",
+					"name": "Actualizar Animanga",
 					"request": {
 						"method": "PUT",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"titulo\": \"Mi Vecino Totoro (Editado)\", \"descripcion\": \"Un clásico del estudio Ghibli\"}"},
-						"url": {"raw": "http://localhost:8081/api/animanga/1", "host": ["localhost"], "port": "8081", "path": ["api", "animanga", "1"]}
-					}
-				},
-				{
-					"name": "Eliminar Animanga (DELETE)",
-					"request": {
-						"method": "DELETE",
-						"url": {"raw": "http://localhost:8081/api/animanga/1", "host": ["localhost"], "port": "8081", "path": ["api", "animanga", "1"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"titulo\": \"Mi Vecino Totoro (Editado)\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/animanga/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"animanga",
+								"1"
+							]
+						}
 					}
 				}
 			]
 		},
 		{
-			"name": "3. Auth (Identity)",
+			"name": "3. Curation + Approval Flow (ms-curation)",
 			"item": [
 				{
-					"name": "Crear Rol",
+					"name": "❌ Crear Propuesta sin datosJson",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"nombre\": \"Admin\"}"},
-						"url": {"raw": "http://localhost:8083/api/roles", "host": ["localhost"], "port": "8083", "path": ["api", "roles"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"curacion",
+								"api",
+								"propuestas"
+							]
+						}
 					}
 				},
 				{
-					"name": "Registrar Usuario",
+					"name": "👤 User crea Propuesta",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"username\": \"test\", \"email\": \"test@test.cl\", \"password_hash\": \"123456\", \"rol\": {\"id\": 1}}"},
-						"url": {"raw": "http://localhost:8083/api/usuarios/registro", "host": ["localhost"], "port": "8083", "path": ["api", "usuarios", "registro"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"datosJson\": {\n    \"titulo\": \"One Punch Man\",\n    \"descripcion\": \"Anime de acción y comedia\",\n    \"fechaEstreno\": \"2015-10-04\",\n    \"tipoAnimanga\": {\"idTipo\": 1},\n    \"idEstudio\": 1,\n    \"estadoEmision\": \"EN_CURSO\",\n    \"generos\": [{\"idGenero\": 1}, {\"idGenero\": 4}]\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"curacion",
+								"api",
+								"propuestas"
+							]
+						}
 					}
 				},
 				{
-					"name": "✅ Login exitoso",
+					"name": "👤 User crea Propuesta 2 (para rechazar)",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"username\": \"test\", \"password_hash\": \"123456\"}"},
-						"url": {"raw": "http://localhost:8083/api/usuarios/login", "host": ["localhost"], "port": "8083", "path": ["api", "usuarios", "login"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"datosJson\": {\n    \"titulo\": \"Propuesta Test\",\n    \"descripcion\": \"Test\",\n    \"fechaEstreno\": \"2026-01-01\",\n    \"tipoAnimanga\": {\"idTipo\": 1},\n    \"estadoEmision\": \"EN_CURSO\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"curacion",
+								"api",
+								"propuestas"
+							]
+						}
 					}
 				},
 				{
-					"name": "❌ Login fallido",
+					"name": "Listar Propuestas (todas)",
 					"request": {
-						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"username\": \"test\", \"password_hash\": \"xxxx\"}"},
-						"url": {"raw": "http://localhost:8083/api/usuarios/login", "host": ["localhost"], "port": "8083", "path": ["api", "usuarios", "login"]}
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"curacion",
+								"api",
+								"propuestas"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Propuestas PENDIENTE",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas?estado=PENDIENTE",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"curacion",
+								"api",
+								"propuestas"
+							]
+						}
+					}
+				},
+				{
+					"name": "❌ User intenta APROBAR (debe fallar 403)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"estado\": \"APROBADO\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas/1/estado",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"curacion",
+								"api",
+								"propuestas",
+								"1",
+								"estado"
+							]
+						}
+					}
+				},
+				{
+					"name": "✅ Admin APRUEBA Propuesta (auto-crea Animanga)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"estado\": \"APROBADO\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas/1/estado",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"curacion",
+								"api",
+								"propuestas",
+								"1",
+								"estado"
+							]
+						}
+					}
+				},
+				{
+					"name": "✅ Admin RECHAZA Propuesta (con comentario)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"estado\": \"RECHAZADO\", \"comentarioRechazo\": \"Datos incompletos\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas/2/estado",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"curacion",
+								"api",
+								"propuestas",
+								"2",
+								"estado"
+							]
+						}
 					}
 				}
 			]
 		},
 		{
-			"name": "4. Perfil (validación vs Auth)",
+			"name": "4. Perfil (ms-perfil)",
 			"item": [
 				{
 					"name": "❌ Crear Perfil (usuario inválido)",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"idUsuario\": 999}"},
-						"url": {"raw": "http://localhost:8085/api/perfiles", "host": ["localhost"], "port": "8085", "path": ["api", "perfiles"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"idUsuario\": 999}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/perfil/api/perfiles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"perfil",
+								"api",
+								"perfiles"
+							]
+						}
 					}
 				},
 				{
-					"name": "✅ Crear Perfil (éxito)",
+					"name": "✅ Crear Perfil Admin",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\"idUsuario\": 1, \"biografia\": \"Hola mundo\", \"avatarUrl\": \"https://example.com/avatar.png\"}"},
-						"url": {"raw": "http://localhost:8085/api/perfiles", "host": ["localhost"], "port": "8085", "path": ["api", "perfiles"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"idUsuario\": 1, \"biografia\": \"Administrador del sistema\", \"avatarUrl\": \"https://example.com/admin.png\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/perfil/api/perfiles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"perfil",
+								"api",
+								"perfiles"
+							]
+						}
+					}
+				},
+				{
+					"name": "✅ Crear Perfil User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"idUsuario\": 2, \"biografia\": \"Usuario regular\", \"avatarUrl\": \"https://example.com/user.png\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/perfil/api/perfiles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"perfil",
+								"api",
+								"perfiles"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Perfiles",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/perfil/api/perfiles",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"perfil",
+								"api",
+								"perfiles"
+							]
+						}
+					}
+				},
+				{
+					"name": "Actualizar Perfil",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"biografia\": \"Admin actualizado\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/perfil/api/perfiles/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"perfil",
+								"api",
+								"perfiles",
+								"1"
+							]
+						}
 					}
 				}
 			]
 		},
 		{
-			"name": "5. Auditoría (log centralizado)",
+			"name": "5. Auditoría (ms-auditoria)",
 			"item": [
 				{
 					"name": "Listar todos los logs",
 					"request": {
 						"method": "GET",
-						"url": {"raw": "http://localhost:8084/api/auditoria", "host": ["localhost"], "port": "8084", "path": ["api", "auditoria"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auditoria/api/auditoria",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auditoria",
+								"api",
+								"auditoria"
+							]
+						}
 					}
 				},
 				{
-					"name": "Logs de animanga",
+					"name": "Logs de tabla propuesta_importacion",
 					"request": {
 						"method": "GET",
-						"url": {"raw": "http://localhost:8084/api/auditoria/tabla/animanga", "host": ["localhost"], "port": "8084", "path": ["api", "auditoria", "tabla", "animanga"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auditoria/api/auditoria/tabla/propuesta_importacion",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auditoria",
+								"api",
+								"auditoria",
+								"tabla",
+								"propuesta_importacion"
+							]
+						}
 					}
 				},
 				{
-					"name": "Logs de usuario",
+					"name": "Logs de tabla animanga",
 					"request": {
 						"method": "GET",
-						"url": {"raw": "http://localhost:8084/api/auditoria/tabla/usuario", "host": ["localhost"], "port": "8084", "path": ["api", "auditoria", "tabla", "usuario"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auditoria/api/auditoria/tabla/animanga",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auditoria",
+								"api",
+								"auditoria",
+								"tabla",
+								"animanga"
+							]
+						}
+					}
+				},
+				{
+					"name": "Logs de usuario específico",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auditoria/api/auditoria/usuario/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auditoria",
+								"api",
+								"auditoria",
+								"usuario",
+								"1"
+							]
+						}
 					}
 				}
 			]
 		},
 		{
-			"name": "6. Gateway (ruteo)",
+			"name": "6. Social (ms-social)",
 			"item": [
 				{
-					"name": "Listar animanga vía Gateway",
+					"name": "👤 User crea Review",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"idAnimanga\": 1, \"puntaje\": 9, \"comentario\": \"Excelente animación y narrativa\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/social/api/resenas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"social",
+								"api",
+								"resenas"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Reviews",
 					"request": {
 						"method": "GET",
-						"url": {"raw": "http://localhost:8080/catalogo/api/animanga", "host": ["localhost"], "port": "8080", "path": ["catalogo", "api", "animanga"]}
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/social/api/resenas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"social",
+								"api",
+								"resenas"
+							]
+						}
+					}
+				},
+				{
+					"name": "Reviews por Animanga",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/social/api/resenas/animanga/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"social",
+								"api",
+								"resenas",
+								"animanga",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "👤 User da Like a review",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"resena\": {\"idResena\": 1}, \"esUtil\": true}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/social/api/votos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"social",
+								"api",
+								"votos"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Media (ms-media)",
+			"item": [
+				{
+					"name": "👤 Agregar Imagen a Animanga",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"idAnimanga\": 1, \"url\": \"https://example.com/totoro.jpg\", \"tipo\": \"PORTADA\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/media/api/recursos",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"media",
+								"api",
+								"recursos"
+							]
+						}
+					}
+				},
+				{
+					"name": "Listar Media por Animanga",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/media/api/recursos/animanga/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"media",
+								"api",
+								"recursos",
+								"animanga",
+								"1"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "8. Help Desk (ms-helpdesk)",
+			"item": [
+				{
+					"name": "👤 User crea Ticket",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"asunto\": \"Error al cargar imagen\", \"descripcion\": \"No puedo subir imágenes a mi perfil\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/soporte/api/incidencias",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"soporte",
+								"api",
+								"incidencias"
+							]
+						}
+					}
+				},
+				{
+					"name": "👤 User consulta sus tickets",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/soporte/api/incidencias",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"soporte",
+								"api",
+								"incidencias"
+							]
+						}
+					}
+				},
+				{
+					"name": "✅ Admin cambia estado ticket",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "\"EN_PROCESO\""
+						},
+						"url": {
+							"raw": "{{baseUrl}}/soporte/api/incidencias/1/estado",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"soporte",
+								"api",
+								"incidencias",
+								"1",
+								"estado"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "9. Library (ms-library)",
+			"item": [
+				{
+					"name": "👤 Agregar a Biblioteca (user)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"idAnimanga\": 1}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/biblioteca/api/biblioteca",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"biblioteca",
+								"api",
+								"biblioteca"
+							]
+						}
+					}
+				},
+				{
+					"name": "👤 Listar Biblioteca del usuario",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/biblioteca/api/biblioteca",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"biblioteca",
+								"api",
+								"biblioteca"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Z. Demo Completo (Flujo Aprobación)",
+			"item": [
+				{
+					"name": "1. Login Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"admin\", \"password_hash\": \"admin123\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/api/usuarios/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"api",
+								"usuarios",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "2. Login User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"user\", \"password_hash\": \"user123\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/api/usuarios/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"api",
+								"usuarios",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "3. User crea Propuesta de Importación",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{userToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"datosJson\": {\n    \"titulo\": \"Attack on Titan\",\n    \"descripcion\": \"Anime de acción y drama\",\n    \"fechaEstreno\": \"2013-04-07\",\n    \"tipoAnimanga\": {\"idTipo\": 1},\n    \"idEstudio\": 1,\n    \"idAutor\": 2,\n    \"estadoEmision\": \"EN_CURSO\",\n    \"generos\": [{\"idGenero\": 1}, {\"idGenero\": 4}]\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"curacion",
+								"api",
+								"propuestas"
+							]
+						}
+					}
+				},
+				{
+					"name": "4. Admin revisa Propuestas PENDIENTE",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas?estado=PENDIENTE",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"curacion",
+								"api",
+								"propuestas"
+							]
+						}
+					}
+				},
+				{
+					"name": "5. Admin APRUEBA Propuesta (auto-crea Animanga)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"estado\": \"APROBADO\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/curacion/api/propuestas/1/estado",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"curacion",
+								"api",
+								"propuestas",
+								"1",
+								"estado"
+							]
+						}
+					}
+				},
+				{
+					"name": "6. Verificar Animanga creado en catálogo",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/catalogo/api/animanga",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"catalogo",
+								"api",
+								"animanga"
+							]
+						}
+					}
+				},
+				{
+					"name": "7. Verificar Auditoría del flujo",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auditoria/api/auditoria",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auditoria",
+								"api",
+								"auditoria"
+							]
+						}
 					}
 				}
 			]

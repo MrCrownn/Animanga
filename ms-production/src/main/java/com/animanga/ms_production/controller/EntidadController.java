@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,7 +29,7 @@ public class EntidadController {
     private EntidadService entidadService;
 
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody Entidad entidad) {
+    public ResponseEntity<?> crear(@RequestBody Entidad entidad, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (entidad == null || entidad.getNombre() == null || entidad.getNombre().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("El nombre de la entidad es obligatorio");
         }
@@ -35,7 +37,7 @@ public class EntidadController {
             return ResponseEntity.badRequest().body("El tipo de entidad es obligatorio");
         }
 
-        String respuesta = entidadService.guardar(entidad);
+        String respuesta = entidadService.guardar(entidad, userId);
 
         if (respuesta.equals("Entidad guardada exitosamente")) {
             return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
@@ -69,12 +71,12 @@ public class EntidadController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody Entidad entidad) {
+    public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody Entidad entidad, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (entidad == null) {
             return ResponseEntity.badRequest().body("El cuerpo de la petición es obligatorio");
         }
 
-        String resultado = entidadService.actualizar(id, entidad);
+        String resultado = entidadService.actualizar(id, entidad, userId);
 
         if (resultado.equals("Entidad no encontrada")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resultado);
@@ -86,8 +88,8 @@ public class EntidadController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Integer id) {
-        boolean eliminado = entidadService.eliminar(id);
+    public ResponseEntity<?> eliminar(@PathVariable Integer id, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
+        boolean eliminado = entidadService.eliminar(id, userId);
         if (eliminado) {
             return ResponseEntity.ok("Entidad eliminada exitosamente");
         } else {

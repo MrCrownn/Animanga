@@ -25,23 +25,24 @@ public class VotoResenaService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private void auditar(String accion, String tabla) {
+    private void auditar(String accion, String tabla, Long idUsuario) {
         try {
             String url = "http://ms-auditoria/api/auditoria";
-            AuditRequest request = new AuditRequest(null, accion, tabla);
+            AuditRequest request = new AuditRequest(idUsuario, accion, tabla);
             restTemplate.postForEntity(url, request, String.class);
         } catch (Exception e) {
             System.err.println("Error al auditar: " + e.getMessage());
         }
     }
 
-    public String guardar(VotoResena voto) {
+    public String guardar(VotoResena voto, Long idUsuarioAuth) {
         if (voto.getResena() == null || voto.getResena().getIdResena() == null) {
             return "La resena es obligatoria";
         }
         if (voto.getIdUsuarioVota() == null) {
             return "El ID del usuario que vota es obligatorio";
         }
+        voto.setIdUsuarioVota(idUsuarioAuth);
         if (voto.getEsUtil() == null) {
             return "El marcador de utilidad es obligatorio";
         }
@@ -63,7 +64,7 @@ public class VotoResenaService {
         resena.setLikeCount(resena.getLikeCount() + 1);
         resenaRepository.save(resena);
 
-        auditar("Voto " + voto.getIdVoto() + " creado para resena " + voto.getResena().getIdResena(), "voto_resena");
+        auditar("Voto " + voto.getIdVoto() + " creado para resena " + voto.getResena().getIdResena() + " por usuario " + idUsuarioAuth, "voto_resena", idUsuarioAuth);
         return "Voto guardado exitosamente";
     }
 
@@ -79,7 +80,7 @@ public class VotoResenaService {
         return votoRepository.findByResena_IdResena(idResena);
     }
 
-    public boolean eliminar(Long id) {
+    public boolean eliminar(Long id, Long idUsuarioAuth) {
         VotoResena voto = votoRepository.findById(id).orElse(null);
         if (voto == null) {
             return false;
@@ -90,7 +91,7 @@ public class VotoResenaService {
         resenaRepository.save(resena);
 
         votoRepository.delete(voto);
-        auditar("Voto " + id + " eliminado", "voto_resena");
+        auditar("Voto " + id + " eliminado por usuario " + idUsuarioAuth, "voto_resena", idUsuarioAuth);
         return true;
     }
 }

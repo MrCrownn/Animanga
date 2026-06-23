@@ -20,17 +20,17 @@ public class NacionalidadService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private void auditar(String accion, String tabla) {
+    private void auditar(String accion, String tabla, Long idUsuarioAuth) {
         try {
             String url = "http://ms-auditoria/api/auditoria";
-            AuditRequest request = new AuditRequest(null, accion, tabla);
+            AuditRequest request = new AuditRequest(idUsuarioAuth, accion, tabla);
             restTemplate.postForEntity(url, request, String.class);
         } catch (Exception e) {
             System.err.println("Error al auditar: " + e.getMessage());
         }
     }
 
-    public String guardar(Nacionalidad nacionalidad) {
+    public String guardar(Nacionalidad nacionalidad, Long idUsuarioAuth) {
         if (nacionalidad.getPais() == null || nacionalidad.getPais().trim().isEmpty()) {
             return "El país es obligatorio";
         }
@@ -40,7 +40,7 @@ public class NacionalidadService {
         }
 
         nacionalidadRepository.save(nacionalidad);
-        auditar("Nacionalidad '" + nacionalidad.getPais() + "' creada", "nacionalidad");
+        auditar("Nacionalidad '" + nacionalidad.getPais() + "' creada", "nacionalidad", idUsuarioAuth);
         return "Nacionalidad guardada exitosamente";
     }
     public boolean existePorPais(String pais) {
@@ -54,7 +54,7 @@ public class NacionalidadService {
         return nacionalidadRepository.findById(id);
     }
 
-    public String actualizar(Integer id, Nacionalidad nacionalidadActualizada) {
+    public String actualizar(Integer id, Nacionalidad nacionalidadActualizada, Long idUsuarioAuth) {
         Nacionalidad nacionalidadExistente = nacionalidadRepository.findById(id).orElse(null);
         if (nacionalidadExistente == null) {
             return "Nacionalidad no encontrada";
@@ -69,17 +69,17 @@ public class NacionalidadService {
         }
 
         nacionalidadRepository.save(nacionalidadExistente);
-        auditar("Nacionalidad '" + nacionalidadExistente.getPais() + "' actualizada", "nacionalidad");
+        auditar("Nacionalidad '" + nacionalidadExistente.getPais() + "' actualizada", "nacionalidad", idUsuarioAuth);
         return "Nacionalidad actualizada exitosamente";
     }
 
-    public boolean eliminar(Integer id) {
+    public boolean eliminar(Integer id, Long idUsuarioAuth) {
         Nacionalidad nacionalidad = nacionalidadRepository.findById(id).orElse(null);
         if (nacionalidad == null) {
             return false;
         }
         nacionalidadRepository.delete(nacionalidad);
-        auditar("Nacionalidad '" + nacionalidad.getPais() + "' eliminada", "nacionalidad");
+        auditar("Nacionalidad '" + nacionalidad.getPais() + "' eliminada", "nacionalidad", idUsuarioAuth);
         return true;
     }
 }

@@ -46,18 +46,16 @@ public class PerfilService {
         }
     }
 
-    public String guardar(Perfil perfil) {
-        if (perfil.getIdUsuario() == null) {
-            return "El id del usuario es obligatorio";
-        }
+    public String guardar(Perfil perfil, Long idUsuarioAuth) {
+        perfil.setIdUsuario(idUsuarioAuth);
 
-        String errorUsuario = validarUsuario(perfil.getIdUsuario());
+        String errorUsuario = validarUsuario(idUsuarioAuth);
         if (errorUsuario != null) return errorUsuario;
 
         perfil.setFechaRegistro(LocalDateTime.now());
 
         perfilRepository.save(perfil);
-        auditar(perfil.getIdUsuario(), "Perfil creado para usuario " + perfil.getIdUsuario(), "perfil");
+        auditar(idUsuarioAuth, "Perfil creado para usuario " + idUsuarioAuth, "perfil");
         return "Perfil guardado exitosamente";
     }
 
@@ -73,7 +71,7 @@ public class PerfilService {
         return perfilRepository.findByIdUsuario(idUsuario);
     }
 
-    public String actualizar(Long id, Perfil nuevoPerfil) {
+    public String actualizar(Long id, Perfil nuevoPerfil, Long idUsuarioAuth) {
         Perfil perfilExistente = perfilRepository.findById(id).orElse(null);
         if (perfilExistente == null) {
             return "Perfil no encontrado";
@@ -89,18 +87,19 @@ public class PerfilService {
             perfilExistente.setPreferencias(nuevoPerfil.getPreferencias());
         }
 
+        perfilExistente.setIdUsuario(idUsuarioAuth);
         perfilRepository.save(perfilExistente);
-        auditar(perfilExistente.getIdUsuario(), "Perfil actualizado", "perfil");
+        auditar(idUsuarioAuth, "Perfil actualizado", "perfil");
         return "Perfil actualizado exitosamente";
     }
 
-    public boolean eliminar(Long id) {
+    public boolean eliminar(Long id, Long idUsuarioAuth) {
         Perfil perfil = perfilRepository.findById(id).orElse(null);
         if (perfil == null) {
             return false;
         }
         perfilRepository.delete(perfil);
-        auditar(perfil.getIdUsuario(), "Perfil eliminado", "perfil");
+        auditar(idUsuarioAuth, "Perfil eliminado", "perfil");
         return true;
     }
 }

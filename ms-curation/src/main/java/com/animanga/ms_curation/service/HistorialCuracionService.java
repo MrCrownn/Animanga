@@ -36,16 +36,15 @@ public class HistorialCuracionService {
         }
     }
 
-    public String guardar(HistorialCuracion historial) {
+    public String guardar(HistorialCuracion historial, Long idUsuarioAuth) {
         if (historial.getPropuesta() == null || historial.getPropuesta().getIdPropuesta() == null) {
             return "La propuesta es obligatoria";
-        }
-        if (historial.getIdModerador() == null) {
-            return "El ID del moderador es obligatorio";
         }
         if (historial.getDecision() == null || historial.getDecision().trim().isEmpty()) {
             return "La decision es obligatoria";
         }
+
+        historial.setIdModerador(idUsuarioAuth);
 
         PropuestaImportacion propuesta = propuestaRepository.findById(historial.getPropuesta().getIdPropuesta()).orElse(null);
         if (propuesta == null) {
@@ -55,7 +54,7 @@ public class HistorialCuracionService {
         historial.setFechaDecision(LocalDateTime.now());
 
         historialRepository.save(historial);
-        auditar("Historial de curacion creado para propuesta " + historial.getPropuesta().getIdPropuesta(), "historial_curacion");
+        auditar("Historial de curacion creado para propuesta " + historial.getPropuesta().getIdPropuesta() + " por usuario " + idUsuarioAuth, "historial_curacion");
         return "Historial guardado exitosamente";
     }
 
@@ -71,13 +70,13 @@ public class HistorialCuracionService {
         return historialRepository.findByPropuesta_IdPropuesta(idPropuesta);
     }
 
-    public boolean eliminar(Long id) {
+    public boolean eliminar(Long id, Long idUsuarioAuth) {
         HistorialCuracion historial = historialRepository.findById(id).orElse(null);
         if (historial == null) {
             return false;
         }
         historialRepository.delete(historial);
-        auditar("Historial " + id + " eliminado", "historial_curacion");
+        auditar("Historial " + id + " eliminado por usuario " + idUsuarioAuth, "historial_curacion");
         return true;
     }
 }

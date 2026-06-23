@@ -1,5 +1,6 @@
 package com.animanga.ms_social.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -26,8 +27,8 @@ public class Resena {
     @Column(nullable = false)
     private String titulo;
 
-    @Column(nullable = false)
-    private Double puntuacion;
+    @Column(nullable = false, precision = 3, scale = 1)
+    private BigDecimal puntuacion;
 
     @Column(columnDefinition = "TEXT")
     private String comentario;
@@ -76,11 +77,11 @@ public class Resena {
         this.titulo = titulo;
     }
 
-    public Double getPuntuacion() {
+    public BigDecimal getPuntuacion() {
         return puntuacion;
     }
 
-    public void setPuntuacion(Double puntuacion) {
+    public void setPuntuacion(BigDecimal puntuacion) {
         this.puntuacion = puntuacion;
     }
 

@@ -20,20 +20,32 @@ public class RecursoMultimediaService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private void auditar(String accion, String tabla) {
+    private void auditar(String accion, String tabla, Long idUsuario) {
         try {
             String url = "http://ms-auditoria/api/auditoria";
-            AuditRequest request = new AuditRequest(null, accion, tabla);
+            AuditRequest request = new AuditRequest(idUsuario, accion, tabla);
             restTemplate.postForEntity(url, request, String.class);
         } catch (Exception e) {
             System.err.println("Error al auditar: " + e.getMessage());
         }
     }
 
-    public String guardar(RecursoMultimedia recurso) {
+    private String validarAnimangaExiste(Long idAnimanga) {
+        try {
+            String url = "http://ms-catalog/api/animanga/" + idAnimanga;
+            restTemplate.getForObject(url, Object.class);
+        } catch (Exception e) {
+            return "El animanga con id " + idAnimanga + " no existe";
+        }
+        return null;
+    }
+
+    public String guardar(RecursoMultimedia recurso, Long idUsuarioAuth) {
         if (recurso.getIdAnimanga() == null) {
             return "El ID del animanga es obligatorio";
         }
+        String errorAnimanga = validarAnimangaExiste(recurso.getIdAnimanga());
+        if (errorAnimanga != null) return errorAnimanga;
         if (recurso.getTipoRecurso() == null || recurso.getTipoRecurso().trim().isEmpty()) {
             return "El tipo de recurso es obligatorio";
         }
@@ -42,7 +54,7 @@ public class RecursoMultimediaService {
         }
 
         recursoRepository.save(recurso);
-        auditar("Recurso " + recurso.getIdRecurso() + " creado para animanga " + recurso.getIdAnimanga(), "recurso_multimedia");
+        auditar("Recurso " + recurso.getIdRecurso() + " creado para animanga " + recurso.getIdAnimanga() + " por usuario " + idUsuarioAuth, "recurso_multimedia", idUsuarioAuth);
         return "Recurso multimedia guardado exitosamente";
     }
 
@@ -62,13 +74,15 @@ public class RecursoMultimediaService {
         return recursoRepository.findByIdAnimangaAndTipoRecurso(idAnimanga, tipo);
     }
 
-    public String actualizar(Long id, RecursoMultimedia recursoActualizado) {
+    public String actualizar(Long id, RecursoMultimedia recursoActualizado, Long idUsuarioAuth) {
         RecursoMultimedia recursoExistente = recursoRepository.findById(id).orElse(null);
         if (recursoExistente == null) {
             return "Recurso no encontrado";
         }
 
         if (recursoActualizado.getIdAnimanga() != null) {
+            String errorAnimanga = validarAnimangaExiste(recursoActualizado.getIdAnimanga());
+            if (errorAnimanga != null) return errorAnimanga;
             recursoExistente.setIdAnimanga(recursoActualizado.getIdAnimanga());
         }
         if (recursoActualizado.getTipoRecurso() != null) {
@@ -82,17 +96,17 @@ public class RecursoMultimediaService {
         }
 
         recursoRepository.save(recursoExistente);
-        auditar("Recurso " + id + " actualizado", "recurso_multimedia");
+        auditar("Recurso " + id + " actualizado por usuario " + idUsuarioAuth, "recurso_multimedia", idUsuarioAuth);
         return "Recurso multimedia actualizado exitosamente";
     }
 
-    public boolean eliminar(Long id) {
+    public boolean eliminar(Long id, Long idUsuarioAuth) {
         RecursoMultimedia recurso = recursoRepository.findById(id).orElse(null);
         if (recurso == null) {
             return false;
         }
         recursoRepository.delete(recurso);
-        auditar("Recurso " + id + " eliminado", "recurso_multimedia");
+        auditar("Recurso " + id + " eliminado por usuario " + idUsuarioAuth, "recurso_multimedia", idUsuarioAuth);
         return true;
     }
 }

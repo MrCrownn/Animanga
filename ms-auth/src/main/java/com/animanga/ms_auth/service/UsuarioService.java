@@ -115,6 +115,26 @@ public class UsuarioService {
         public List <Usuario> obtenerTodos(){
             return this.usuarioRepository.findAll();
         }
+        public UsuarioResponse obtenerUsuarioResponse(Long id) {
+            java.util.Optional<Usuario> opt = usuarioRepository.findById(id);
+            if (opt.isPresent()) {
+                Usuario u = opt.get();
+                String estado = u.getEstadoCuenta().name();
+                String rolNombre = (u.getRol() != null) ? u.getRol().getNombre() : null;
+                return new UsuarioResponse(u.getId(), u.getUsername(), u.getEmail(), estado, rolNombre);
+            }
+            return null;
+        }
+        public List<UsuarioResponse> obtenerTodosResponse() {
+            List<Usuario> usuarios = usuarioRepository.findAll();
+            List<UsuarioResponse> resultado = new java.util.ArrayList<>();
+            for (Usuario u : usuarios) {
+                String estado = u.getEstadoCuenta().name();
+                String rolNombre = (u.getRol() != null) ? u.getRol().getNombre() : null;
+                resultado.add(new UsuarioResponse(u.getId(), u.getUsername(), u.getEmail(), estado, rolNombre));
+            }
+            return resultado;
+        }
     public String actualizaUsuario (Long id, Usuario usuarioActualizado){
         Usuario usuarioExistente= usuarioRepository.findById(id).orElse(null);
         if (usuarioExistente == null){

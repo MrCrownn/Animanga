@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,18 +27,16 @@ public class HistorialCuracionController {
     private HistorialCuracionService historialService;
 
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody HistorialCuracion historial) {
+    public ResponseEntity<?> crear(@RequestBody HistorialCuracion historial, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
+
         if (historial.getPropuesta() == null || historial.getPropuesta().getIdPropuesta() == null) {
             return ResponseEntity.badRequest().body("La propuesta es obligatoria");
-        }
-        if (historial.getIdModerador() == null) {
-            return ResponseEntity.badRequest().body("El ID del moderador es obligatorio");
         }
         if (historial.getDecision() == null || historial.getDecision().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("La decision es obligatoria");
         }
 
-        String respuesta = historialService.guardar(historial);
+        String respuesta = historialService.guardar(historial, userId);
         if (respuesta.equals("Historial guardado exitosamente")) {
             return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
         }
@@ -66,8 +66,8 @@ public class HistorialCuracionController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Long id) {
-        boolean eliminado = historialService.eliminar(id);
+    public ResponseEntity<?> eliminar(@PathVariable Long id, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
+        boolean eliminado = historialService.eliminar(id, userId);
         if (eliminado) {
             return ResponseEntity.ok("Historial eliminado exitosamente");
         }

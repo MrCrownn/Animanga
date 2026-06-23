@@ -49,12 +49,12 @@ public class UsuarioController {
     }
     }
    @GetMapping()
-   public List <Usuario> obtenerTodos(){
-    return usuarioService.obtenerTodos();
-   } 
+    public List <UsuarioResponse> obtenerTodos(){
+     return usuarioService.obtenerTodosResponse();
+    } 
    @GetMapping("/{id}")
    public ResponseEntity <?> obtenerUsuario(@PathVariable Long id){
-        Usuario usuario= usuarioService.obtenerUsuario(id);
+        UsuarioResponse usuario= usuarioService.obtenerUsuarioResponse(id);
         if (usuario == null){
             return ResponseEntity.status(404)
                 .body("Usuario no encontrado con id: " + id);

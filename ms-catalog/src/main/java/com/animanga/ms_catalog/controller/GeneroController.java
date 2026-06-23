@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,12 +28,12 @@ public class GeneroController {
     private GeneroService generoService;
 
     @PostMapping
-    public ResponseEntity<?> crear(@RequestBody Genero genero) {
+    public ResponseEntity<?> crear(@RequestBody Genero genero, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (genero == null || genero.getNombre() == null || genero.getNombre().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("El nombre del genero es obligatorio");
         }
 
-        String respuesta = generoService.guardar(genero);
+        String respuesta = generoService.guardar(genero, userId);
 
         if (respuesta.equals("Genero guardado exitosamente")) {
             return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
@@ -55,12 +57,12 @@ public class GeneroController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody Genero genero) {
+    public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody Genero genero, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
         if (genero == null || genero.getNombre() == null || genero.getNombre().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("El nombre del genero es obligatorio");
         }
 
-        String resultado = generoService.actualizar(id, genero);
+        String resultado = generoService.actualizar(id, genero, userId);
 
         if (resultado.equals("Genero no encontrado")) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(resultado);
@@ -72,8 +74,8 @@ public class GeneroController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Integer id) {
-        boolean eliminado = generoService.eliminar(id);
+    public ResponseEntity<?> eliminar(@PathVariable Integer id, @Parameter(hidden = true) @RequestHeader("X-User-Id") Long userId) {
+        boolean eliminado = generoService.eliminar(id, userId);
         if (eliminado) {
             return ResponseEntity.ok("Genero eliminado exitosamente");
         } else {

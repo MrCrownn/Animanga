@@ -52,17 +52,17 @@ public class AnimangaService {
         return null;
     }
 
-    private void auditar(String accion, String tabla) {
+    private void auditar(String accion, String tabla, Long idUsuarioAuth) {
         try {
             String url = "http://ms-auditoria/api/auditoria";
-            AuditRequest request = new AuditRequest(null, accion, tabla);
+            AuditRequest request = new AuditRequest(idUsuarioAuth, accion, tabla);
             restTemplate.postForEntity(url, request, String.class);
         } catch (Exception e) {
             System.err.println("Error al auditar: " + e.getMessage());
         }
     }
 
-    public String guardar(Animanga animanga) {
+    public String guardar(Animanga animanga, Long idUsuarioAuth) {
         if (animanga.getTitulo() == null || animanga.getTitulo().trim().isEmpty()) {
             return "El título del Animanga es obligatorio";
         }
@@ -93,7 +93,7 @@ public class AnimangaService {
         if (errorAutor != null) return errorAutor;
         
         animangaRepository.save(animanga);
-        auditar("Animanga '" + animanga.getTitulo() + "' creado", "animanga");
+        auditar("Animanga '" + animanga.getTitulo() + "' creado", "animanga", idUsuarioAuth);
         return "Animanga guardado exitosamente";
     }
 
@@ -113,7 +113,7 @@ public class AnimangaService {
         return animangaRepository.findByTipoAnimanga_Nombre(nombreTipo);
     }
 
-    public String actualizar(Long id, Animanga animangaActualizado) {
+    public String actualizar(Long id, Animanga animangaActualizado, Long idUsuarioAuth) {
         Animanga animangaExistente = animangaRepository.findById(id).orElse(null);
         if (animangaExistente == null) {
             return "Animanga no encontrado";
@@ -161,7 +161,7 @@ public class AnimangaService {
         }
         
         animangaRepository.save(animangaExistente);
-        auditar("Animanga '" + animangaExistente.getTitulo() + "' actualizado", "animanga");
+        auditar("Animanga '" + animangaExistente.getTitulo() + "' actualizado", "animanga", idUsuarioAuth);
         return "Animanga actualizado exitosamente";
     }
 
@@ -183,13 +183,13 @@ public class AnimangaService {
         return resumenes;
     }
 
-    public boolean eliminar(Long id) {
+    public boolean eliminar(Long id, Long idUsuarioAuth) {
         Animanga animanga = animangaRepository.findById(id).orElse(null);
         if (animanga == null) {
             return false;
         }
         animangaRepository.delete(animanga);
-        auditar("Animanga '" + animanga.getTitulo() + "' eliminado", "animanga");
+        auditar("Animanga '" + animanga.getTitulo() + "' eliminado", "animanga", idUsuarioAuth);
         return true;
     }
 }
